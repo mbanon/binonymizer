@@ -1,0 +1,3 @@
+[submodule "ixa-pipe-nerc"]
+	path = ixa-pipe-nerc
+	url = https://github.com/ixa-ehu/ixa-pipe-nerc.git
