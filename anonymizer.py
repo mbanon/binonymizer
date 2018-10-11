@@ -23,14 +23,15 @@ import os
 
 from tempfile import NamedTemporaryFile, gettempdir
 #from multiprocessing import cpu_count
+import anonymizer_core
 
 try:
   from .util import logging_setup
-  from .anonymizer_core import anonymize
-  from .tmx_utils import tmx2paco
+#  from .anonymizer_core import extract
+  from .tmx_utils import tmx2text
 except (ImportError, SystemError):
   from util import logging_setup
-  from anonymizer_core import anonymize
+#  from anonymizer_core import extract
   from tmx_utils import tmx2text
   
   
@@ -45,10 +46,12 @@ def initialization():
   parser = argparse.ArgumentParser(prog=os.path.basename(sys.argv[0]), formatter_class=argparse.ArgumentDefaultsHelpFormatter, description=__doc__)
   # Mandatory parameters
   ## Input file (TMX). Try to open it to check if it exists
-  parser.add_argument('input', type=argparse.FileType('rt'), default=None, help="TMX file to be anonymized")
+  parser.add_argument('input', type=argparse.FileType('rb'), default=None, help="TMX file to be anonymized")
   ## Output file (TMX). Try to open it to check if it exists
   parser.add_argument('output', nargs='?', type=argparse.FileType('w'), default=sys.stdout, help="TMX file with anonymization annotations")
-  
+  parser.add_argument("srclang", type=str, help="Source language (SL) of the input")
+  parser.add_argument("trglang", type=str, help="Target language (TL) of the input")
+    
   # Options group
   groupO = parser.add_argument_group('Optional')
   groupO.add_argument('--tmp_dir', default=gettempdir(), help="Temporary directory where creating the temporary files of this program")
@@ -72,18 +75,19 @@ def initialization():
 
 def main(args):
     logging.info("Executing main program...")
-    srcsentences = NamedTemporaryFile(mode="w", delete=True, dir=args.tmp_dir)
-    trgsentences = NamedTemproaryFile(mode="w", delete=True, dir=args.tmp_dir)
-    scrlang = ""
-    trglang = ""
+    srcsentences = NamedTemporaryFile(mode="w+", delete=True, dir=args.tmp_dir)
+    trgsentences = NamedTemporaryFile(mode="w+", delete=True, dir=args.tmp_dir)
+
     try:
-      tmx_utils.tmx2text(args.input, srcsentences, trgsentences, srclang, trglang)
+      tmx2text(args.input, srcsentences, trgsentences, args.srclang, args.trglang)
     except Exception as ex:
       tb=traceback.format_exc()
       print("Unable to extract text from TMX")
       logging.error(tb)
       sys.exit(1)
-    anonymizer_core.anonymize(args.output, srcsentences, trgsentences, srclang, trglang)
+    srcsentences.seek(0)  
+    trgsentences.seek(0)
+    anonymizer_core.extract(args.output, srcsentences, trgsentences, args.srclang, args.trglang)
     logging.info("Program finished")
 
 if __name__ == '__main__':

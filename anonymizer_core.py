@@ -5,7 +5,16 @@
 #Submodules run in parallel, and loaded as needed:
 #i.e.: eu-es will need one ixa and one bilst. es-en will need two instances of bilst 
 
+
 import multiprocessing as mp
+
+  
+import regex_module
+
+__author__ = "Marta Bañón"
+__version__ = "Version 0.1 # 05/10/2018 # Initial release # Marta Bañón"
+
+
 
 def extract(output, srcsentences, trgsentences, srclang, trglang):
   output_queue = mp.Queue()  
@@ -48,7 +57,7 @@ def extract(output, srcsentences, trgsentences, srclang, trglang):
   processes.clear()
   output_queue.clear()
   
-  merge_proc = mp.Process(target=merger_module.merge, args=(source_regex_results, source_addresses_results, source_names_results, target_regex_results, target_addresses_results, target_names_results, target_output, merge_output))
+  merge_proc = mp.Process(target=merger_module.merge, args=(source_regex_results, source_addresses_results, source_names_results, target_regex_results, target_addresses_results, target_names_results, target_output, output))
     
   merge_proc.start()    
   merge_proc.join()
