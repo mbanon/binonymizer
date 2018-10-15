@@ -3,6 +3,7 @@
 #regex-module: extracts email addresses, phone numbers, DNIs, passports, IP addresses, GPS coordinates. 
 #writes tempfile with numline, entities.
 
+import re
 
 __author__ = "Marta Bañón"
 __version__ = "Version 0.1 # 05/10/2018 # Initial release # Marta Bañón"
@@ -43,7 +44,7 @@ def extract(sentences, output):
     entities.extend(extract_IPs(sentence))
     entities.extend(extract_GPSs(sentence))
     
-    
+  output.put("regex results")  
   return
 
 def extract_emails(sentence):

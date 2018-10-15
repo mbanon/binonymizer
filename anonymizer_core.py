@@ -7,14 +7,19 @@
 
 
 import multiprocessing as mp
-
+import sys
   
 import regex_module
+import address_module
+import ixa_module
+import bilst_module
+import merger_module
 
 __author__ = "Marta Bañón"
 __version__ = "Version 0.1 # 05/10/2018 # Initial release # Marta Bañón"
 
-
+ixa_langs=["eu"]
+bilst_langs = ["en", "es"]
 
 def extract(output, srcsentences, trgsentences, srclang, trglang):
   output_queue = mp.Queue()  
@@ -41,10 +46,11 @@ def extract(output, srcsentences, trgsentences, srclang, trglang):
   
   for p in processes:
     p.start()
-    
+  
   for p in processes:
     p.join()
-    
+
+
   results = [output_queue.get() for p in processes]
   
   source_regex_results = results[0]  
@@ -54,12 +60,22 @@ def extract(output, srcsentences, trgsentences, srclang, trglang):
   source_names_results = results[4]
   target_names_results = results[5]
   
-  processes.clear()
-  output_queue.clear()
+#  processes.clear()
+#  output_queue = mp.Queue()
   
-  merge_proc = mp.Process(target=merger_module.merge, args=(source_regex_results, source_addresses_results, source_names_results, target_regex_results, target_addresses_results, target_names_results, target_output, output))
+  merger_module.merge(srcsentences, trgsentences, 
+    source_regex_results, source_addresses_results, source_names_results, 
+    target_regex_results, target_addresses_results, target_names_results,  
+    output)
     
-  merge_proc.start()    
-  merge_proc.join()
+#  merge_proc.start()    
+#  merge_proc.join()
     
   return
+
+def selectNamesModule(lang):
+  if lang in ixa_langs:
+    return sys.modules["ixa_module"]
+  if lang in bilst_langs:
+    return sys.modules["bilst_module"]
+  return sys.modules["bilst_module"] #default
