@@ -87,7 +87,10 @@ def main(args):
       sys.exit(1)
     srcsentences.seek(0)  
     trgsentences.seek(0)
-    anonymizer_core.extract(args.output, srcsentences, trgsentences, args.srclang, args.trglang)
+    anonymizer_core.extract(args.output, srcsentences, trgsentences, args.tmp_dir, args.srclang, args.trglang)
+    #args.output.seek(0)
+#    for i in args.output:
+#      print(i)
     logging.info("Program finished")
 
 if __name__ == '__main__':

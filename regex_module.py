@@ -4,14 +4,17 @@
 #writes tempfile with numline, entities.
 
 import re
+import entity
+import logging
 
 __author__ = "Marta Bañón"
 __version__ = "Version 0.1 # 05/10/2018 # Initial release # Marta Bañón"
 
+
+
 #https://www.regextester.com/19
 #to check
 email_regex = re.compile(r"([a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*)")
-
 
 
 #https://www.regextester.com/1978
@@ -34,8 +37,10 @@ IPv6_regex = re.compile(r"(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]
 
 GPS_regex = re.compile(r"")
 
-def extract(sentences, output):
-
+def extract(sentences,  regex_entities):
+  logging.debug("Extracting regex...")
+  
+  sentences.seek(0)
   for sentence in sentences:
     entities = []
     entities.extend(extract_emails(sentence))
@@ -43,8 +48,10 @@ def extract(sentences, output):
     entities.extend(extract_IDs(sentence))
     entities.extend(extract_IPs(sentence))
     entities.extend(extract_GPSs(sentence))
-    
-  output.put("regex results")  
+    regex_entities.write(entity.serializeArray(entities))
+#  print(regex_entities)  
+#  output_queue = regex_entities
+  logging.debug("Exiting regex extract...")
   return
 
 def extract_emails(sentence):
