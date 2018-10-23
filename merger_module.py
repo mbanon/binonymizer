@@ -18,7 +18,10 @@ def merge(srcsentences, trgsentences, src_regex, src_addresses, src_names, trg_r
   for src, trg, raw_src_r, src_a, src_n, raw_trg_r, trg_a, trg_n in zip_longest(srcsentences, trgsentences, src_regex, src_addresses, src_names, trg_regex, trg_addresses, trg_names):
     src_ent = []
     trg_ent = []
-    
+    print(src)
+    print(trg)
+    print(raw_src_r)
+    print(raw_trg_r)
     src_r = entity.deserializeArray(raw_src_r)
     trg_r = entity.deserializeArray(raw_trg_r)
     
@@ -31,7 +34,7 @@ def merge(srcsentences, trgsentences, src_regex, src_addresses, src_names, trg_r
 #    trg_ent.append(trg_a)
 #    trg_ent.append(trg_n)
 
-    output.write(src.strip("\n") + "\t" + trg.strip("\n") + "\t" + entity.serialize(src_ent, trg_ent))
+    output.write(src.strip("\n") + "\t" + trg.strip("\n") + "\t" + entity.serialize(src_ent, trg_ent)+"\n")
   logging.debug("Exiting merging...")
   return 
 

@@ -48,14 +48,19 @@ def extract(sentences,  regex_entities):
     entities.extend(extract_IDs(sentence))
     entities.extend(extract_IPs(sentence))
     entities.extend(extract_GPSs(sentence))
-    regex_entities.write(entity.serializeArray(entities))
-#  print(regex_entities)  
+    print("DEBUG: "  + entity.serializeArray(entities)+"\n")
+    #regex_entities.write(entity.serializeArray(entities)+"\n")
+    regex_entities.write("TURURURURURURU\n")
+
+
 #  output_queue = regex_entities
   logging.debug("Exiting regex extract...")
   return
 
 def extract_emails(sentence):
   emails = []
+  e = entity.Entity(1, 5, "test", "hola")
+  emails.append(e)
   return emails
 
 def extract_phones(sentence):

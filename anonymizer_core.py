@@ -66,7 +66,11 @@ def extract(output, srcsentences, trgsentences, tmpdir,  srclang, trglang):
   
   for p in processes:
     p.join()
- 
+    
+  source_regex_results.write("MIAU MIWU"+"\n")  
+  source_regex_results.seek(0)
+  for l in source_regex_results:
+    print("OUT!: "  + l)
   merger_module.merge(srcsentences, trgsentences, 
     source_regex_results, source_addresses_results, source_names_results, 
     target_regex_results, target_addresses_results, target_names_results,  

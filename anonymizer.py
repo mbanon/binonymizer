@@ -20,6 +20,7 @@ import traceback
 import sys 
 import argparse
 import os
+from itertools import zip_longest
 
 from tempfile import NamedTemporaryFile, gettempdir
 #from multiprocessing import cpu_count
@@ -80,6 +81,9 @@ def main(args):
 
     try:
       tmx2text(args.input, srcsentences, trgsentences, args.srclang, args.trglang)
+      srcsentences.seek(0)
+      trgsentences.seek(0)
+
     except Exception as ex:
       tb=traceback.format_exc()
       print("Unable to extract text from TMX")
