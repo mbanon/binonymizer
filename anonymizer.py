@@ -15,16 +15,27 @@
 #or at document scope (in case of a lot of files with few lines) 
 
 
-import logging
-import traceback
-import sys 
-import argparse
-import os
-from itertools import zip_longest
-
-from tempfile import NamedTemporaryFile, gettempdir
-#from multiprocessing import cpu_count
 import anonymizer_core
+import argparse
+import logging
+import os
+import sys
+import traceback
+
+from tempfile import NamedTemporaryFile
+from tempfile import gettempdir
+from timeit import default_timer
+from multiprocessing import Queue, Process, Value, cpu_count
+
+
+
+import merger_module
+import address_module
+import regex_module
+import ixa_module
+import bilst_module
+import entity
+
 
 try:
   from .util import logging_setup
@@ -56,8 +67,8 @@ def initialization():
   # Options group
   groupO = parser.add_argument_group('Optional')
   groupO.add_argument('--tmp_dir', default=gettempdir(), help="Temporary directory where creating the temporary files of this program")
-#  groupO.add_argument('-b', '--block_size', type=int, default=10000, help="Sentence pairs per block")
-#  groupO.add_argument('-p', '--processes', type=int, default=max(1, cpu_count()-1), help="Number of processes to use")
+  groupO.add_argument('-b', '--block_size', type=int, default=10000, help="Sentence pairs per block")
+  groupO.add_argument('-p', '--processes', type=int, default=max(1, cpu_count()-1), help="Number of processes to use")
 
   # Logging group
   groupL = parser.add_argument_group('Logging')
@@ -73,36 +84,193 @@ def initialization():
   logging.info("Arguments processed.")
   return args
 
+  
+  
+ixa_langs = ["eu"]
+bilst_langs = ["en", "es"]
+
+
+def selectNamesModule(lang):
+  if lang in ixa_langs:
+    return sys.modules["ixa_module"]
+  if lang in bilst_langs:
+    return sys.modules["bilst_module"]
+  return sys.modules["bilst_module"] #default
+
+def anonymizer_process(i, jobs_queue, output_queue, args):
+  while True:
+    job = jobs_queue.get()
+    if job:
+      logging.debug("Job {0}".format(job.__repr__()))
+      nblock, filein_name = job
+      ojob = None
+      with open(filein_name, "r") as filein, NamedTemporaryFile(mode="w", delete=False, dir=args.tmp_dir) as fileout:
+        logging.debug("Creating temporary filename {0}".format(fileout.name))
+        ents = []
+        for i in filein:
+          entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module)
+          fileout.write(src.strip("\n")+"\t"+trg.strip("\n")+"\t"+entity.serialize(entities)+"\n")
+        ojob = (nblock, fileout.name)
+        filein.close()
+        fileout.close()
+      if ojob :
+        output_queue.put(ojob)
+      os.unlink(filein_name)  
+    else:
+      logging.debug("Exiting worker")
+      break
+   
+def mapping_process(args, job_queue):        
+  logging.info("Start mapping")
+  nblock = 0
+  nline = 0
+  mytemp = None
+  for line in args.input:
+    if (nline % args.block_size) == 0:
+      logging.debug("Creating block {}".format(nblock))
+      if mytemp:
+        job = (nblock, mytemp.name)
+        mytemp.close()
+        jobs_queue.put(job)
+        nblock += 1
+      mytemp = NamedTemporaryFile(mode="w", delete=False, dir=args.tmp_dir)  
+      logging.debug("Mapping: creating temporary filename {0}".format(mytemp.name))  
+    mytemp.write(line)  
+    nline += 1
+    
+  if nline > 0  :
+    job = (nblock, mytemp.name)
+    mytemp.close()
+    jobs_queue.put(job)
+  
+  return nline
+      
+def reduce_process(output_queue, args):
+  h = []
+  last_block = 0
+  while True:
+    logging.debug("Reduce: heap status {0}".format(h.__str__()))
+    while len(h) > 0 and h[0][0] == last_block:
+      nblock, filein_name = heappop(h)
+      last_block += 1
+      
+      with open(filein_name, "r") as filein:
+        for i in filein:
+          args.output.write(i)
+        filein.close()
+      os.unlink(filein_name)  
+    job = output_queue.get()
+    if job:
+      nblock, filein_name = job
+      heappush(h, (nblock, filein_name))
+    else:
+      logging.debug("Exiting reduce loop")
+      break
+  if  len(h)>0:
+    logging.debug("Still elements in heap")
+  
+  while len(h) > 0 and h[0][0] == last_block:
+    nblock, filein_name = heapq.heappop(h)
+    last_block += 1
+    os.unlink(filein_name)
+  
+  if len(h) != 0:
+    logging.error("The queue is not empty and it should!")
+  
+  logging.info("Anonymization finished. Output available in  {}".format(args.output.name))
+  
+  args.output.close()
+  
+  
+def perform_anonymization(args, srcsentences, trgsentences, regex_module, source_names_module, target_names_module, address_module):
+  time_start = default_timer()
+  logging.info("Starting process")
+  logging.info("Running {0} workers at {1} rows per block".format(args.processes, args.block_size))
+  
+  process_count = max(1, args.processes)
+  maxsize = 1000 * process_count
+  
+  output_queue = Queue(maxsize = maxsize)
+  worker_count = process_count
+  
+  #Start reducer
+  reduce = Process(target=reduce_process, args = (output_queue, args))
+  reduce.start()
+  
+  #Start workers
+  jobs_queue = Queue(maxsize = maxsize)
+  workers = []
+  for i in range(worker_count):
+    filter = Process(target = anonymizer_process, args = (i, jobs_queue, output_queue, args))
+    filter.daemon = True
+    filter.start()
+    workers.append(filter)
+  
+  #Mappers process
+  nline = mapping_process(args, jobs_queue)
+  args.input.close()
+  
+  #Worker termination
+  for _ in workers:
+    jobs_queue.put(None)
+   
+  logging.info("End mapping")  
+  
+  for w in workers:
+    w.join()
+    
+  #Reducer termination
+  output_queue.put(None)
+  reduce.join()
+  
+  #Stats
+  logging.info("Finished")
+  elapsed_time = default_timer() - time_start
+  logging.info("Total: {0} rows".format(nline))
+  logging.info("Elapsed time {0:.2f} s".format(elapsed_time))
+  logging.info("Troughput: {0} rows/s".format(int((nline*1.0)/elapsed_time)))
 
 def main(args):
-    logging.info("Executing main program...")
-    srcsentences = NamedTemporaryFile(mode="w+", delete=True, dir=args.tmp_dir)
-    trgsentences = NamedTemporaryFile(mode="w+", delete=True, dir=args.tmp_dir)
+  logging.info("Executing main program...")
+  srcsentences = NamedTemporaryFile(mode="w+", delete=True, dir=args.tmp_dir)
+  trgsentences = NamedTemporaryFile(mode="w+", delete=True, dir=args.tmp_dir)
 
-    try:
-      tmx2text(args.input, srcsentences, trgsentences, args.srclang, args.trglang)
-      srcsentences.seek(0)
-      trgsentences.seek(0)
+  
+  #To do: allow raw files 
+  #To do: change tmx2txt to return a single file
+  #To do: keep format in raw input file, just add column
+  try:
+    tmx2text(args.input, srcsentences, trgsentences, args.srclang, args.trglang)
 
-    except Exception as ex:
-      tb=traceback.format_exc()
-      print("Unable to extract text from TMX")
-      logging.error(tb)
-      sys.exit(1)
-    srcsentences.seek(0)  
-    trgsentences.seek(0)
-    anonymizer_core.extract(args.output, srcsentences, trgsentences, args.tmp_dir, args.srclang, args.trglang)
-    #args.output.seek(0)
-#    for i in args.output:
-#      print(i)
-    logging.info("Program finished")
+  except Exception as ex:
+    tb = traceback.format_exc()
+    print("Unable to extract text from TMX")
+    logging.error(tb)
+    sys.exit(1)
+      
+      
+  srcsentences.seek(0)  
+  trgsentences.seek(0)
+    
+  source_names_module = selectNamesModule(args.srclang)
+  target_names_module = selectNamesModule(args.trglang)
+  
+  perform_anonymization(args, srcsentences, trgsentences, regex_module, source_names_module, target_names_module, address_module)
+  
+#  for src, trg in zip(srcsentences, trgsentences):
+#    entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module)
+#    args.output.write(src.strip("\n")+"\t"+trg.strip("\n")+"\t"+entity.serialize(entities)+"\n")
+
+  #To do: rebuild tmx files with anotations from anonymizer
+  
+  logging.info("Program finished")
 
 if __name__ == '__main__':
-    try:
-        logging_setup()
-        args = initialization() # Parsing parameters
-        main(args)  # Running main program
-    except Exception as ex:
-        tb = traceback.format_exc()
-        logging.error(tb)
-        sys.exit(1)
+  try:
+    logging_setup()
+    args = initialization() # Parsing parameters
+    main(args)  # Running main program
+  except Exception as ex:
+    tb = traceback.format_exc()
+    logging.error(tb)
+    sys.exit(1)

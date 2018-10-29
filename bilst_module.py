@@ -4,15 +4,12 @@
 import logging
 import entity
 
-def extract(sentences,  bilst_entities):
-  logging.debug("Extracting Bilst...")
-  sentences.seek(0)
-  for sentence in sentences:
-    entities = []
-    bilst_entities.write(entity.serializeArray(entities))
+def extract(sentence):
   
-  logging.debug("Exiting bilst extract...")
-  return
+  entities = []
+  
+ 
+  return entities
 
  
 

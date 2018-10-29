@@ -29,10 +29,8 @@ def deserializeEntity(json_str):
 def serializeArray(array):
   if len(array)==0:
     return "[]"
+
   serialized_entities = []
-  if len(array)== 0:
-    return serialized_entities
-  
   for i in array:
     serialized_entities.append(i.serializeEntity())
   return """[{0}]""".format(",".join(serialized_entities))
@@ -43,15 +41,15 @@ def deserializeArray(json_str):
     return []
   str_arr = json.loads(json_str) 
   arr = []
-  print("STR ARR: " + str_arr)
   for a in str_arr:
     arr.append(deserializeEntity(a))
   return arr
     
   
-def serialize(source_entities, target_entities):
+def serialize(entities_dict):
   d=dict()
-  d["l1"] = serializeArray(source_entities)
-  d["l2"] = serializeArray(target_entities)
-  return json.JSONEncoder().encode(d)
-  #return "{\"l1\":" +serializeArray(source_entities) + ", \"l2\":" +serializeArray(target_entities) + "}"
+
+#  d["l1"] = serializeArray(entities_dict["l1"])
+#  d["l2"] = serializeArray(entities_dict["l2"])
+#  return json.JSONEncoder().encode(d)
+  return "{\"l1\":" +serializeArray(entities_dict["l1"]) + ", \"l2\":" +serializeArray(entities_dict["l2"]) + "}"
