@@ -114,8 +114,8 @@ def anonymizer_process(i, args, regex_module, source_names_module, target_names_
 #        ents = []
         for i in filein:
           parts = i.split("\t")
-          src = parts[0].strip()
-          trg = parts[1].strip()
+          src = parts[2].strip()
+          trg = parts[3].strip()
           entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module)
           fileout.write(i.strip()+"\t"+entity.serialize(entities)+"\n")
         ojob = (nblock, fileout.name)
