@@ -58,7 +58,7 @@ def initialization():
   parser = argparse.ArgumentParser(prog=os.path.basename(sys.argv[0]), formatter_class=argparse.ArgumentDefaultsHelpFormatter, description=__doc__)
   # Mandatory parameters
   ## Input file (TMX). Try to open it to check if it exists
-  parser.add_argument('input', type=argparse.FileType('rb'), default=None, help="File to be anonymized")
+  parser.add_argument('input', type=argparse.FileType('r'), default=None, help="File to be anonymized")
   ## Output file (TMX). Try to open it to check if it exists
   parser.add_argument('output', nargs='?', type=argparse.FileType('w'), default=sys.stdout, help="File with anonymization annotations")
   parser.add_argument("srclang", type=str, help="Source language (SL) of the input")
@@ -66,7 +66,7 @@ def initialization():
   
   ## Parameters required
   groupM = parser.add_argument_group('Mandatory')
-  groupM.add_argument("--format", choices=["tmx", "raw"], required=True, type=str, help="Input file format. Values: raw, tmx")
+  groupM.add_argument("--format", choices=["tmx", "cols"], required=True, type=str, help="Input file format. Values: cols, tmx")
   
   
   # Options group
@@ -116,10 +116,8 @@ def anonymizer_process(i, args, regex_module, source_names_module, target_names_
           parts = i.split("\t")
           src = parts[0].strip()
           trg = parts[1].strip()
-          print(src)
-          print(trg)
           entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module)
-          fileout.write(src +"\t"+trg+"\t"+entity.serialize(entities)+"\n")
+          fileout.write(i.strip()+"\t"+entity.serialize(entities)+"\n")
         ojob = (nblock, fileout.name)
         filein.close()
         fileout.close()
@@ -243,15 +241,14 @@ def perform_anonymization(args, input_file, regex_module, source_names_module, t
 def main(args):
   logging.info("Executing main program...")
   sentences = NamedTemporaryFile(mode="w+", delete=True, dir=args.tmp_dir)
-#  trgsentences = NamedTemporaryFile(mode="w+", delete=True, dir=args.tmp_dir)
-
   
   #To do: allow raw files 
-  #To do: change tmx2txt to return a single file
   #To do: keep format in raw input file, just add column
   if args.format=="tmx":
     try:
-      tmx2text(args.input, sentences, args.srclang, args.trglang)
+      args.input.close()
+      with open(args.input.name, "rb") as filein:
+        tmx2text(filein, sentences, args.srclang, args.trglang)
       sentences.seek(0) 
       
     except Exception as ex:
@@ -259,7 +256,8 @@ def main(args):
       print("Unable to extract text from TMX")
       logging.error(tb)
       sys.exit(1)
-      
+  else:
+    sentences = args.input
       
  
 #  trgsentences.seek(0)
