@@ -22,10 +22,10 @@ import os
 import sys
 import traceback
 
-from tempfile import NamedTemporaryFile
-from tempfile import gettempdir
+from tempfile import NamedTemporaryFile, gettempdir
 from timeit import default_timer
-from multiprocessing import Queue, Process, Value, cpu_count
+from multiprocessing import Queue, Process,  cpu_count
+from heapq import heappush, heappop
 
 
 
@@ -58,12 +58,17 @@ def initialization():
   parser = argparse.ArgumentParser(prog=os.path.basename(sys.argv[0]), formatter_class=argparse.ArgumentDefaultsHelpFormatter, description=__doc__)
   # Mandatory parameters
   ## Input file (TMX). Try to open it to check if it exists
-  parser.add_argument('input', type=argparse.FileType('rb'), default=None, help="TMX file to be anonymized")
+  parser.add_argument('input', type=argparse.FileType('rb'), default=None, help="File to be anonymized")
   ## Output file (TMX). Try to open it to check if it exists
-  parser.add_argument('output', nargs='?', type=argparse.FileType('w'), default=sys.stdout, help="TMX file with anonymization annotations")
+  parser.add_argument('output', nargs='?', type=argparse.FileType('w'), default=sys.stdout, help="File with anonymization annotations")
   parser.add_argument("srclang", type=str, help="Source language (SL) of the input")
   parser.add_argument("trglang", type=str, help="Target language (TL) of the input")
-    
+  
+  ## Parameters required
+  groupM = parser.add_argument_group('Mandatory')
+  groupM.add_argument("--format", choices=["tmx", "raw"], required=True, type=str, help="Input file format. Values: raw, tmx")
+  
+  
   # Options group
   groupO = parser.add_argument_group('Optional')
   groupO.add_argument('--tmp_dir', default=gettempdir(), help="Temporary directory where creating the temporary files of this program")
@@ -97,19 +102,24 @@ def selectNamesModule(lang):
     return sys.modules["bilst_module"]
   return sys.modules["bilst_module"] #default
 
-def anonymizer_process(i, jobs_queue, output_queue, args):
+def anonymizer_process(i, args, regex_module, source_names_module, target_names_module, address_module, jobs_queue, output_queue):
   while True:
-    job = jobs_queue.get()
+    job = jobs_queue.get()    
     if job:
       logging.debug("Job {0}".format(job.__repr__()))
       nblock, filein_name = job
       ojob = None
       with open(filein_name, "r") as filein, NamedTemporaryFile(mode="w", delete=False, dir=args.tmp_dir) as fileout:
         logging.debug("Creating temporary filename {0}".format(fileout.name))
-        ents = []
+#        ents = []
         for i in filein:
+          parts = i.split("\t")
+          src = parts[0].strip()
+          trg = parts[1].strip()
+          print(src)
+          print(trg)
           entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module)
-          fileout.write(src.strip("\n")+"\t"+trg.strip("\n")+"\t"+entity.serialize(entities)+"\n")
+          fileout.write(src +"\t"+trg+"\t"+entity.serialize(entities)+"\n")
         ojob = (nblock, fileout.name)
         filein.close()
         fileout.close()
@@ -120,12 +130,12 @@ def anonymizer_process(i, jobs_queue, output_queue, args):
       logging.debug("Exiting worker")
       break
    
-def mapping_process(args, job_queue):        
+def mapping_process(args, input_file, jobs_queue):        
   logging.info("Start mapping")
   nblock = 0
   nline = 0
   mytemp = None
-  for line in args.input:
+  for line in input_file:
     if (nline % args.block_size) == 0:
       logging.debug("Creating block {}".format(nblock))
       if mytemp:
@@ -182,7 +192,7 @@ def reduce_process(output_queue, args):
   args.output.close()
   
   
-def perform_anonymization(args, srcsentences, trgsentences, regex_module, source_names_module, target_names_module, address_module):
+def perform_anonymization(args, input_file, regex_module, source_names_module, target_names_module, address_module):
   time_start = default_timer()
   logging.info("Starting process")
   logging.info("Running {0} workers at {1} rows per block".format(args.processes, args.block_size))
@@ -201,14 +211,14 @@ def perform_anonymization(args, srcsentences, trgsentences, regex_module, source
   jobs_queue = Queue(maxsize = maxsize)
   workers = []
   for i in range(worker_count):
-    filter = Process(target = anonymizer_process, args = (i, jobs_queue, output_queue, args))
-    filter.daemon = True
-    filter.start()
-    workers.append(filter)
+    job = Process(target = anonymizer_process, args = (i, args, regex_module, source_names_module, target_names_module, address_module, jobs_queue, output_queue))
+    job.daemon = True
+    job.start()
+    workers.append(job)
   
   #Mappers process
-  nline = mapping_process(args, jobs_queue)
-  args.input.close()
+  nline = mapping_process(args, input_file, jobs_queue)
+  input_file.close()
   
   #Worker termination
   for _ in workers:
@@ -232,37 +242,41 @@ def perform_anonymization(args, srcsentences, trgsentences, regex_module, source
 
 def main(args):
   logging.info("Executing main program...")
-  srcsentences = NamedTemporaryFile(mode="w+", delete=True, dir=args.tmp_dir)
-  trgsentences = NamedTemporaryFile(mode="w+", delete=True, dir=args.tmp_dir)
+  sentences = NamedTemporaryFile(mode="w+", delete=True, dir=args.tmp_dir)
+#  trgsentences = NamedTemporaryFile(mode="w+", delete=True, dir=args.tmp_dir)
 
   
   #To do: allow raw files 
   #To do: change tmx2txt to return a single file
   #To do: keep format in raw input file, just add column
-  try:
-    tmx2text(args.input, srcsentences, trgsentences, args.srclang, args.trglang)
-
-  except Exception as ex:
-    tb = traceback.format_exc()
-    print("Unable to extract text from TMX")
-    logging.error(tb)
-    sys.exit(1)
+  if args.format=="tmx":
+    try:
+      tmx2text(args.input, sentences, args.srclang, args.trglang)
+      sentences.seek(0) 
+      
+    except Exception as ex:
+      tb = traceback.format_exc()
+      print("Unable to extract text from TMX")
+      logging.error(tb)
+      sys.exit(1)
       
       
-  srcsentences.seek(0)  
-  trgsentences.seek(0)
+ 
+#  trgsentences.seek(0)
     
   source_names_module = selectNamesModule(args.srclang)
   target_names_module = selectNamesModule(args.trglang)
   
-  perform_anonymization(args, srcsentences, trgsentences, regex_module, source_names_module, target_names_module, address_module)
+  perform_anonymization(args, sentences, regex_module, source_names_module, target_names_module, address_module)
   
 #  for src, trg in zip(srcsentences, trgsentences):
 #    entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module)
 #    args.output.write(src.strip("\n")+"\t"+trg.strip("\n")+"\t"+entity.serialize(entities)+"\n")
 
   #To do: rebuild tmx files with anotations from anonymizer
-  
+  if args.format=="tmx":
+   #Rebuild TMX with anon 
+   pass
   logging.info("Program finished")
 
 if __name__ == '__main__':

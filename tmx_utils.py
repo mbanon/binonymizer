@@ -18,7 +18,7 @@ p2 = re.compile(r'  *')
 tu       = {}
 exclude  = []
 
-def tmx2text(tmxfile, srcsentences, trgsentences, srclang, trglang):
+def tmx2text(tmxfile, sentences, srclang, trglang):
   #    tmx2txt(input, output, lang_list)
   langlist = [srclang, trglang]
   def se(name, attrs):
@@ -47,8 +47,8 @@ def tmx2text(tmxfile, srcsentences, trgsentences, srclang, trglang):
         
 #        print(tu[srclang])
 #        print(tu[trglang])
-        srcsentences.write(tu[srclang]+"\n")
-        trgsentences.write(tu[trglang]+"\n")
+        sentences.write(tu[srclang]+"\t")
+        sentences.write(tu[trglang]+"\n")
 #        srcsentences.write("\n")
 #        trgsentences.write("\n")
       
