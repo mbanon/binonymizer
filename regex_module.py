@@ -49,31 +49,41 @@ def extract(sentence):
 def extract_emails(sentence):
   emails = []
   
-  matches = email_regex.finditer(sentence)
-  if matches != None:
-    for i, m in enumerate(matches):
-      e = entity.Entity(m.span(i)[0], m.span(i)[1]-m.span(i)[0], "EMAIL", m.group(i))  # matches.end(i)-matches.start(i)
+#  matches = email_regex.finditer(sentence)
+#  if matches != None:
+#    for i, m in enumerate(matches):
+  for m in re.finditer(email_regex, sentence):
+      e = entity.Entity(m.start(), m.end()-m.start(), "EMAIL", m.group(0))  # matches.end(i)-matches.start(i)
       emails.append(e)
   return emails
 
 def extract_phones(sentence):
   phones = []    
-  matches = phone_regex.finditer(sentence)
-  if matches != None:
-    for i, m in enumerate(matches):
-      e = entity.Entity(m.span(i)[0], m.span(i)[1]-m.span(i)[0], "PHONE", m.group(i))  # matches.end(i)-matches.start(i)
+#  matches = phone_regex.finditer(sentence)
+#  if matches != None:
+##    print(sentence)
+#    for i, m in enumerate(matches):
+#      e = entity.Entity(m.span(i)[0], m.span(i)[1]-m.span(i)[0], "PHONE", m.group(i))  # matches.end(i)-matches.start(i)
+#      phones.append(e)
+  for m in re.finditer(phone_regex, sentence):
+      e = entity.Entity(m.start(), m.end()-m.start(), "PHONE", m.group(0))  # matches.end(i)-matches.start(i)
       phones.append(e)
   return phones
 
 def extract_IDs(sentence):
   IDs = []
-  DNI_matches = DNI_regex.finditer(sentence)
-  NIE_matches = NIE_regex.finditer(sentence)
-  matches = chain(DNI_matches, NIE_matches)
-  if matches != None:
-    for i, m in enumerate(matches):
-      e = entity.Entity(m.span(i)[0], m.span(i)[1]-m.span(i)[0], "ID", m.group(i))  # matches.end(i)-matches.start(i)
-      IDs.append(e)
+#  DNI_matches = DNI_regex.finditer(sentence)
+#  NIE_matches = NIE_regex.finditer(sentence)
+#  matches = chain(DNI_matches, NIE_matches)
+#  if matches != None:
+#    for i, m in enumerate(matches):
+#      e = entity.Entity(m.span(i)[0], m.span(i)[1]-m.span(i)[0], "ID", m.group(i))  # matches.end(i)-matches.start(i)
+#      IDs.append(e)
+
+  for m in chain(re.finditer(DNI_regex, sentence), re.finditer(NIE_regex, sentence) ):
+    e = entity.Entity(m.start(), m.end()-m.start(), "ID", m.group(0))  # matches.end(i)-matches.start(i)
+    IDs.append(e)
+      
   return IDs
 
 def extract_IPs(sentence):

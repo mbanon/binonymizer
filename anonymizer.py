@@ -86,6 +86,10 @@ def initialization():
   args = parser.parse_args()
   logging_setup(args)
   logging.debug("Arguments processed: {}".format(str(args)))
+  #print(args.input.name)
+  if args.format=="tmx" and args.input.name=="<stdin>":
+    logging.error("Cannot process TMX from standard input.")
+    sys.exit(1)
   logging.info("Arguments processed.")
   return args
 
@@ -114,8 +118,12 @@ def anonymizer_process(i, args, regex_module, source_names_module, target_names_
 #        ents = []
         for i in filein:
           parts = i.split("\t")
-          src = parts[2].strip()
-          trg = parts[3].strip()
+          if args.format == "tmx":
+            src = parts[0].strip()
+            trg = parts[1].strip()
+          if args.format == "cols":
+            src = parts[2].strip()
+            trg = parts[3].strip()
           entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module)
           fileout.write(i.strip()+"\t"+entity.serialize(entities)+"\n")
         ojob = (nblock, fileout.name)
