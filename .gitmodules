@@ -1,3 +1,6 @@
 [submodule "ixa-pipe-nerc"]
 	path = ixa-pipe-nerc
 	url = https://github.com/ixa-ehu/ixa-pipe-nerc.git
+[submodule "ixa-pipe-ner-python"]
+	path = ixa-pipe-ner-python
+	url = http://gitlab.prompsit.com/vmsanchez/ixa-pipe-ner-python.git
