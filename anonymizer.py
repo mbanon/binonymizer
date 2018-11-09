@@ -21,6 +21,7 @@ import logging
 import os
 import sys
 import traceback
+import jpype
 
 from tempfile import NamedTemporaryFile, gettempdir
 from timeit import default_timer
@@ -35,6 +36,12 @@ import regex_module
 import ixa_module
 import bilst_module
 import entity
+
+import sys
+
+#TO DO
+sys.path.append("/home/mbanon/project/anonymizer/anonymizer/prompsit-python-bindings/")
+import prompsit_python_bindings.ixa
 
 
 try:
@@ -124,7 +131,15 @@ def anonymizer_process(i, args, regex_module, source_names_module, target_names_
           if args.format == "cols":
             src = parts[2].strip()
             trg = parts[3].strip()
-          entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module)
+
+          print("anonymizer_process body")
+          if not jpype.isThreadAttachedToJVM():
+            print("jpype not attached")
+            jpype.attachThreadToJVM()
+          print("creating tagger")  
+          tagger=prompsit_python_bindings.ixa.IXANERPipeline('eu')  
+          print("tagger created")
+          entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module, tagger)
           fileout.write(i.strip()+"\t"+entity.serialize(entities)+"\n")
         ojob = (nblock, fileout.name)
         filein.close()
