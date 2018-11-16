@@ -14,17 +14,14 @@ import entity
 #tagger=prompsit_python_bindings.ixa.IXANERPipeline('eu')  
 
 
-def extract(sentence):
-  print("H_OLA")
+def extract(sentence, tagger):
   
   entities = []
-
-  sentences = []
-  sentences.append(sentence)
-  print(sentences)
+#  sentences = []
+#  sentences.append(sentence)
+#  print(sentences)
   
-  tags = tagger.nertag(sentences)
-  print(tags)
+  tags = tagger.nertag([sentence])
   #process_tags(tags)
   return entities
 

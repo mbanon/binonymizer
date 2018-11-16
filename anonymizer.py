@@ -41,7 +41,6 @@ import sys
 
 #TO DO
 sys.path.append("/home/mbanon/project/anonymizer/anonymizer/prompsit-python-bindings/")
-import prompsit_python_bindings.ixa
 
 
 try:
@@ -114,6 +113,9 @@ def selectNamesModule(lang):
   return sys.modules["bilst_module"] #default
 
 def anonymizer_process(i, args, regex_module, source_names_module, target_names_module, address_module, jobs_queue, output_queue):
+  import prompsit_python_bindings.ixa
+  tagger=prompsit_python_bindings.ixa.IXANERPipeline('eu')  
+
   while True:
     job = jobs_queue.get()    
     if job:
@@ -122,7 +124,6 @@ def anonymizer_process(i, args, regex_module, source_names_module, target_names_
       ojob = None
       with open(filein_name, "r") as filein, NamedTemporaryFile(mode="w", delete=False, dir=args.tmp_dir) as fileout:
         logging.debug("Creating temporary filename {0}".format(fileout.name))
-#        ents = []
         for i in filein:
           parts = i.split("\t")
           if args.format == "tmx":
@@ -132,13 +133,8 @@ def anonymizer_process(i, args, regex_module, source_names_module, target_names_
             src = parts[2].strip()
             trg = parts[3].strip()
 
-          print("anonymizer_process body")
           if not jpype.isThreadAttachedToJVM():
-            print("jpype not attached")
             jpype.attachThreadToJVM()
-          print("creating tagger")  
-          tagger=prompsit_python_bindings.ixa.IXANERPipeline('eu')  
-          print("tagger created")
           entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module, tagger)
           fileout.write(i.strip()+"\t"+entity.serialize(entities)+"\n")
         ojob = (nblock, fileout.name)
