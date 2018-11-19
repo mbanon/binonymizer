@@ -21,8 +21,13 @@ def extract(sentence, tagger):
 #  sentences.append(sentence)
 #  print(sentences)
   
-  tags = tagger.nertag([sentence])
-  #process_tags(tags)
+  tags = tagger.nertag([sentence], "ED")
+  #tags is an array
+#  print(tags)
+#  tag_array = entity.deserializeArray((tags))
+  for t in tags:
+    ent = entity.Entity( t.get("start"), t.get("length"), t.get("type"), t.get("entity") )
+    entities.append(ent)
   return entities
 
  
