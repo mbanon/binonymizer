@@ -113,7 +113,7 @@ def selectNamesModule(lang):
   return sys.modules["bilst_module"] #default
 
 def anonymizer_process(i, args, regex_module, source_names_module, target_names_module, address_module, jobs_queue, output_queue):
-  import prompsit_python_bindings.ixa
+  import prompsit_python_bindings.ixa 
   tagger=prompsit_python_bindings.ixa.IXANERPipeline('eu')  
 
   while True:
@@ -135,7 +135,8 @@ def anonymizer_process(i, args, regex_module, source_names_module, target_names_
 
           if not jpype.isThreadAttachedToJVM():
             jpype.attachThreadToJVM()
-          entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module, tagger)
+          mode = prompsit_python_bindings.ixa.Mode.ENTITY_DETECTION  
+          entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module, tagger, mode)
           fileout.write(i.strip()+"\t"+entity.serialize(entities)+"\n")
         ojob = (nblock, fileout.name)
         filein.close()

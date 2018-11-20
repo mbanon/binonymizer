@@ -3,6 +3,12 @@
 #ixa-module:  extracts name entities for EU, writes tempfile with numline, entities.
 import logging
 import entity
+import sys
+
+#TO DO
+#sys.path.append("/home/mbanon/project/anonymizer/anonymizer/prompsit-python-bindings/")
+
+#import prompsit_python_bindings.ixa as ixa
 
 #
 #import sys
@@ -14,14 +20,14 @@ import entity
 #tagger=prompsit_python_bindings.ixa.IXANERPipeline('eu')  
 
 
-def extract(sentence, tagger):
+def extract(sentence, tagger, mode):
   
   entities = []
 #  sentences = []
 #  sentences.append(sentence)
 #  print(sentences)
   
-  tags = tagger.nertag([sentence], "ED")
+  tags = tagger.nertag([sentence], mode)
   #tags is an array
 #  print(tags)
 #  tag_array = entity.deserializeArray((tags))

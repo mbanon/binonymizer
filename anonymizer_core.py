@@ -21,7 +21,7 @@ __author__ = "Marta Bañón"
 __version__ = "Version 0.1 # 05/10/2018 # Initial release # Marta Bañón"
 
 
-def extract(src, trg, srclang, trglang, regex_module, src_names_module, trg_names_module, address_module, tagger):
+def extract(src, trg, srclang, trglang, regex_module, src_names_module, trg_names_module, address_module, tagger, mode):
  
   
   src_regex_results = regex_module.extract(src)
@@ -29,9 +29,8 @@ def extract(src, trg, srclang, trglang, regex_module, src_names_module, trg_name
   
   src_addresses_results = address_module.extract(src)
   trg_addresses_results = address_module.extract(trg)
-  
-  src_names_results = src_names_module.extract(src, tagger)
-  trg_names_results = trg_names_module.extract(trg, tagger)
+  src_names_results = src_names_module.extract(src, tagger, mode)
+  trg_names_results = trg_names_module.extract(trg, tagger, mode)
 
 
   merger_results = merger_module.merge(src, trg, src_regex_results, src_addresses_results, src_names_results, trg_regex_results, trg_addresses_results,  trg_names_results)

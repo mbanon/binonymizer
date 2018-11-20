@@ -4,7 +4,7 @@
 import logging
 import entity
 
-def extract(sentence, tagger):
+def extract(sentence, tagger, mode):
   
   entities = []
   
