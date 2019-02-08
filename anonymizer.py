@@ -21,7 +21,7 @@ import logging
 import os
 import sys
 import traceback
-import jpype
+#import jpype
 
 from tempfile import NamedTemporaryFile, gettempdir
 from timeit import default_timer
@@ -33,14 +33,14 @@ from heapq import heappush, heappop
 import merger_module
 import address_module
 import regex_module
-import ixa_module
-import bilst_module
+#import ixa_module
+#import bilst_module
 import entity
-
+import spacy_module
 import sys
 
 #TO DO
-sys.path.append("/home/mbanon/project/anonymizer/anonymizer/prompsit-python-bindings/")
+#sys.path.append("/home/mbanon/project/anonymizer/anonymizer/prompsit-python-bindings/")
 
 
 try:
@@ -54,8 +54,8 @@ except (ImportError, SystemError):
   
   
 __author__ = "Marta Bañón"
-__version__ = "Version 0.1 # 05/10/2018 # Initial release # Marta Bañón"
-
+__version__ = "Version 0.1 # 20181005 # Initial release # Marta Bañón"
+__version__ = "Version 0.2 # 20180207 # Integrating SpaCy # Marta Bañón" 
 
 def initialization():
   logging.info("Processing arguments...")
@@ -101,20 +101,41 @@ def initialization():
 
   
   
-ixa_langs = ["eu"]
-bilst_langs = ["en", "es"]
+#ixa_langs = ["eu"]
+#bilst_langs = ["en", "es"]
+
+spacy_langs=["bg", "da", "el", "sk", "sl", "sv", "ga", "hr", "mt", "lt", "hu", "et", "de", "fr", "es", "it", "pt", "nl", "pl", "cs", "ro", "fi", "lv"]
 
 
 def selectNamesModule(lang):
+'''
   if lang in ixa_langs:
     return sys.modules["ixa_module"]
   if lang in bilst_langs:
     return sys.modules["bilst_module"]
   return sys.modules["bilst_module"] #default
+'''
+  if lang in spacy_langs:
+    load_spacy_model(lang)
+    return sys.modules["spacy_module"]  
+  #default
+  else:  
+  return sys.modules["spacy_module"]  
 
+def load_spacy_model(lang):
+  if lang in ["de"]:
+  
+  if lang in ["fr"]:
+  if lang in ["es"]:
+  if lang in ["it"]:
+  if lang in ["pt"]:
+  if lang in ["nl"]  
+  if lang in ["bg", "da", "el", "sk", "sl", "sv", "ga", "hr", "mt", "lt", "hu", "et", "pl", "cs", "ro", "fi", "lv"]:
+  else
+    //load xx
 def anonymizer_process(i, args, regex_module, source_names_module, target_names_module, address_module, jobs_queue, output_queue):
-  import prompsit_python_bindings.ixa 
-  tagger=prompsit_python_bindings.ixa.IXANERPipeline('eu')  
+  #import prompsit_python_bindings.ixa 
+  #tagger=prompsit_python_bindings.ixa.IXANERPipeline('eu')  
 
   while True:
     job = jobs_queue.get()    
@@ -133,10 +154,11 @@ def anonymizer_process(i, args, regex_module, source_names_module, target_names_
             src = parts[2].strip()
             trg = parts[3].strip()
 
-          if not jpype.isThreadAttachedToJVM():
-            jpype.attachThreadToJVM()
-          mode = prompsit_python_bindings.ixa.Mode.ENTITY_DETECTION  
-          entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module, tagger, mode)
+          #if not jpype.isThreadAttachedToJVM():
+          #  jpype.attachThreadToJVM()
+          #mode = prompsit_python_bindings.ixa.Mode.ENTITY_DETECTION  
+          #entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module, tagger, mode)
+          entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module)
           fileout.write(i.strip()+"\t"+entity.serialize(entities)+"\n")
         ojob = (nblock, fileout.name)
         filein.close()
