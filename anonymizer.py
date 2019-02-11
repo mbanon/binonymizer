@@ -108,32 +108,25 @@ spacy_langs=["bg", "da", "el", "sk", "sl", "sv", "ga", "hr", "mt", "lt", "hu", "
 
 
 def selectNamesModule(lang):
-'''
+  '''
   if lang in ixa_langs:
     return sys.modules["ixa_module"]
   if lang in bilst_langs:
     return sys.modules["bilst_module"]
   return sys.modules["bilst_module"] #default
-'''
+  '''
   if lang in spacy_langs:
-    load_spacy_model(lang)
-    return sys.modules["spacy_module"]  
+    model = spacy_module.load_spacy_model(lang)
+    return [sys.modules["spacy_module"], model]
+
   #default
   else:  
-  return sys.modules["spacy_module"]  
-
-def load_spacy_model(lang):
-  if lang in ["de"]:
-  
-  if lang in ["fr"]:
-  if lang in ["es"]:
-  if lang in ["it"]:
-  if lang in ["pt"]:
-  if lang in ["nl"]  
-  if lang in ["bg", "da", "el", "sk", "sl", "sv", "ga", "hr", "mt", "lt", "hu", "et", "pl", "cs", "ro", "fi", "lv"]:
-  else
-    //load xx
-def anonymizer_process(i, args, regex_module, source_names_module, target_names_module, address_module, jobs_queue, output_queue):
+    model = spacy_module.load_spacy_model(lang)
+    return [sys.modules["spacy_module"] , model]
+   
+   
+   
+def anonymizer_process(i, args, regex_module, source_names_module, target_names_module, address_module, source_names_model, target_names_model, jobs_queue, output_queue):
   #import prompsit_python_bindings.ixa 
   #tagger=prompsit_python_bindings.ixa.IXANERPipeline('eu')  
 
@@ -158,7 +151,7 @@ def anonymizer_process(i, args, regex_module, source_names_module, target_names_
           #  jpype.attachThreadToJVM()
           #mode = prompsit_python_bindings.ixa.Mode.ENTITY_DETECTION  
           #entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module, tagger, mode)
-          entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module)
+          entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module, source_names_model, target_names_model)
           fileout.write(i.strip()+"\t"+entity.serialize(entities)+"\n")
         ojob = (nblock, fileout.name)
         filein.close()
@@ -232,7 +225,7 @@ def reduce_process(output_queue, args):
   args.output.close()
   
   
-def perform_anonymization(args, input_file, regex_module, source_names_module, target_names_module, address_module):
+def perform_anonymization(args, input_file, regex_module, source_names_module, target_names_module, address_module, source_names_model, target_names_model):
   time_start = default_timer()
   logging.info("Starting process")
   logging.info("Running {0} workers at {1} rows per block".format(args.processes, args.block_size))
@@ -251,7 +244,7 @@ def perform_anonymization(args, input_file, regex_module, source_names_module, t
   jobs_queue = Queue(maxsize = maxsize)
   workers = []
   for i in range(worker_count):
-    job = Process(target = anonymizer_process, args = (i, args, regex_module, source_names_module, target_names_module, address_module, jobs_queue, output_queue))
+    job = Process(target = anonymizer_process, args = (i, args, regex_module, source_names_module, target_names_module, address_module, source_names_model, target_names_model, jobs_queue, output_queue))
     job.daemon = True
     job.start()
     workers.append(job)
@@ -304,10 +297,23 @@ def main(args):
  
 #  trgsentences.seek(0)
     
-  source_names_module = selectNamesModule(args.srclang)
-  target_names_module = selectNamesModule(args.trglang)
+  names_module_src = selectNamesModule(args.srclang)
+  names_module_trg = selectNamesModule(args.trglang)
   
-  perform_anonymization(args, sentences, regex_module, source_names_module, target_names_module, address_module)
+  if len(names_module_src) == 1:
+    source_names_module = names_module_src[0]
+  elif len(names_module_src) == 2:
+    source_names_module = names_module_src[0]
+    source_names_model = names_module_src[1]
+  
+  if len(names_module_trg) == 1:
+    target_names_module = names_module_trg[0]
+  elif len(names_module_trg) == 2:
+    target_names_module = names_module_trg[0]        
+    target_names_model = names_module_trg[1]
+
+  
+  perform_anonymization(args, sentences, regex_module, source_names_module, target_names_module, address_module, source_names_model, target_names_model)
   
 #  for src, trg in zip(srcsentences, trgsentences):
 #    entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module)

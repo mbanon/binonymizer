@@ -22,7 +22,7 @@ class Entity:
   
 def deserializeEntity(json_str):
   payload = json.loads(json_str)
-  return Entity(payload.start, payload.length, payload.type, payload.entity)
+  return Entity(payload.start, payload.length, payload.type, payload.entity.encode("utf-8"))
   
 
   
