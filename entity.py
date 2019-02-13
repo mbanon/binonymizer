@@ -17,12 +17,12 @@ class Entity:
   
   def serializeEntity(self):
     d=self.toDict()
-    return json.JSONEncoder().encode(d)
-    #return """{"start": {0}, "length": {1}, "type": "{2}", "entity": "{3}"}""".format(self.start, self.length, self.type, self.entity)
+    return json.dumps(d, ensure_ascii=False)
+
   
 def deserializeEntity(json_str):
   payload = json.loads(json_str)
-  return Entity(payload.start, payload.length, payload.type, payload.entity.encode("utf-8"))
+  return Entity(payload.start, payload.length, payload.type, payload.entity)
   
 
   
@@ -47,9 +47,7 @@ def deserializeArray(json_str):
     
   
 def serialize(entities_dict):
-  d=dict()
-
-#  d["l1"] = serializeArray(entities_dict["l1"])
-#  d["l2"] = serializeArray(entities_dict["l2"])
-#  return json.JSONEncoder().encode(d)
   return "{\"l1\":" +serializeArray(entities_dict["l1"]) + ", \"l2\":" +serializeArray(entities_dict["l2"]) + "}"
+
+def sort_by_position(entity_array):
+  return sorted(entity_array, key=lambda k: k.start)

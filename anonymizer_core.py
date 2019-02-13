@@ -37,3 +37,13 @@ def extract(src, trg, srclang, trglang, regex_module, src_names_module, trg_name
   merger_results = merger_module.merge(src, trg, src_regex_results, src_addresses_results, src_names_results, trg_regex_results, trg_addresses_results,  trg_names_results)
     
   return merger_results
+
+
+def overwrite(text, entities):
+  sorted_entities = entity.sort_by_position(entities)
+
+  new_text = text
+  prev_pos = 0
+  for e in entities:
+     
+  return "MIAUMIAU"+text

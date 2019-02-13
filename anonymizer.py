@@ -152,7 +152,15 @@ def anonymizer_process(i, args, regex_module, source_names_module, target_names_
           #mode = prompsit_python_bindings.ixa.Mode.ENTITY_DETECTION  
           #entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module, tagger, mode)
           entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module, source_names_model, target_names_model)
-          fileout.write(i.strip()+"\t"+entity.serialize(entities)+"\n")
+          if args.format == "cols":
+            anon_source = anonymizer_core.overwrite(src, entities["l1"])
+            anon_target = anonymizer_core.overwrite(trg, entities["l2"])
+            parts[2] = anon_source
+            parts[3] = anon_target        
+            fileout.write("\t".join(parts))
+          if args.format == "tmx":
+            logging.error("Unsupported feature")  
+          #fileout.write(i.strip()+"\t"+entity.serialize(entities)+"\n")
         ojob = (nblock, fileout.name)
         filein.close()
         fileout.close()
