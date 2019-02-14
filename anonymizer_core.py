@@ -9,19 +9,29 @@
 
 import logging
 
-#import regex_module
-#import address_module
-#import ixa_module
-#import bilst_module
+
 import merger_module
-#from itertools import zip_longest
 import entity
 
 __author__ = "Marta Bañón"
 __version__ = "Version 0.1 # 05/10/2018 # Initial release # Marta Bañón"
 
 
+
 #def extract(src, trg, srclang, trglang, regex_module, src_names_module, trg_names_module, address_module, tagger, mode):
+"""
+Extracts all entities from a pair of parallel sentences:
+  src: Source sentence
+  trg: Target sentence
+  srclang: Source language
+  trglang: Target language
+  regex_module:
+  src_names_module:
+  trg_names_module:
+  address_module:
+  source_tagger:
+  target_tagger:    
+"""
 def extract(src, trg, srclang, trglang, regex_module, src_names_module, trg_names_module, address_module, source_tagger, target_tagger): 
   
   src_regex_results = regex_module.extract(src)
@@ -38,12 +48,24 @@ def extract(src, trg, srclang, trglang, regex_module, src_names_module, trg_name
     
   return merger_results
 
+def get_replacement(e):
+  return  '''<entity class="{0}">{1}</entity>'''.format(e.type, e.entity)
+  
 
 def overwrite(text, entities):
+  if len(entities) == 0:
+    return text
+    
   sorted_entities = entity.sort_by_position(entities)
-
-  new_text = text
+  slices = []
   prev_pos = 0
-  for e in entities:
-     
-  return "MIAUMIAU"+text
+  
+  for e in sorted_entities:
+    sub = text[prev_pos:e.start]+get_replacement(e)
+    prev_pos = e.start + e.length 
+    slices.append(sub)
+  else:
+  #last slice
+    slices.append(text[prev_pos:])
+#  logging.debug("Final text: " + "".join(slices))    
+  return "".join(slices)

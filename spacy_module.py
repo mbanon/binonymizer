@@ -10,17 +10,17 @@ def load_spacy_model(lang):
   logging.debug("Import lang package for " + lang)
   
   if lang in ["en"]:  
-    spacy.cli.download("en_core_web_sm")    
-    return spacy.load("en_core_web_sm")
+    spacy.cli.download("en_core_web_md")    
+    return spacy.load("en_core_web_md")
   elif lang in ["de"]:
     spacy.cli.download("de_core_news_sm")
     return spacy.load("de_core_news_sm")
   elif lang in ["fr"]:
-    spacy.cli.download("fr_core_news_sm")
-    return spacy.load("fr_core_news_sm")
+    spacy.cli.download("fr_core_news_md")
+    return spacy.load("fr_core_news_md3")
   elif lang in ["es"]:
-    spacy.cli.download("es_core_news_sm")
-    return spacy.load("es_core_news_sm")
+    spacy.cli.download("es_core_news_md")
+    return spacy.load("es_core_news_md")
   elif lang in ["it"]:
     spacy.cli.download("it_core_news_sm")
     return spacy.load("it_core_news_sm")
