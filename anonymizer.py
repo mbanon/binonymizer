@@ -7,7 +7,7 @@
 #and extracting the source and the target sentences,
 #generating (in the case of tmx files) a raw parallel corpus,
 #that will be input to the anonymizer-core.
-#hen the anonymizer-core.py finishes, builds the annotated TMXs (if the entry was a TMX file)
+#when the anonymizer-core.py finishes, builds the annotated TMXs (if the entry was a TMX file)
 
 
 
@@ -21,7 +21,6 @@ import logging
 import os
 import sys
 import traceback
-#import jpype
 
 from tempfile import NamedTemporaryFile, gettempdir
 from timeit import default_timer
@@ -33,23 +32,16 @@ from heapq import heappush, heappop
 import merger_module
 import address_module
 import regex_module
-#import ixa_module
-#import bilst_module
 import entity
-import spacy_module
 import sys
 
-#TO DO
-#sys.path.append("/home/mbanon/project/anonymizer/anonymizer/prompsit-python-bindings/")
 
 
 try:
   from .util import logging_setup
-#  from .anonymizer_core import extract
   from .tmx_utils import tmx2text
 except (ImportError, SystemError):
   from util import logging_setup
-#  from anonymizer_core import extract
   from tmx_utils import tmx2text
   
   
@@ -62,14 +54,13 @@ def initialization():
   # Getting arguments and options with argparse
   # Initialization of the argparse class
   parser = argparse.ArgumentParser(prog=os.path.basename(sys.argv[0]), formatter_class=argparse.ArgumentDefaultsHelpFormatter, description=__doc__)
+
   # Mandatory parameters
-  ## Input file (TMX). Try to open it to check if it exists
   parser.add_argument('input', type=argparse.FileType('r'), default=None, help="File to be anonymized")
-  ## Output file (TMX). Try to open it to check if it exists
   parser.add_argument('output', nargs='?', type=argparse.FileType('w'), default=sys.stdout, help="File with anonymization annotations")
   parser.add_argument("srclang", type=str, help="Source language (SL) of the input")
   parser.add_argument("trglang", type=str, help="Target language (TL) of the input")
-  
+
   ## Parameters required
   groupM = parser.add_argument_group('Mandatory')
   groupM.add_argument("--format", choices=["tmx", "cols"], required=True, type=str, help="Input file format. Values: cols, tmx")
@@ -92,7 +83,6 @@ def initialization():
   args = parser.parse_args()
   logging_setup(args)
   logging.debug("Arguments processed: {}".format(str(args)))
-  #print(args.input.name)
   if args.format=="tmx" and args.input.name=="<stdin>":
     logging.error("Cannot process TMX from standard input.")
     sys.exit(1)
@@ -100,42 +90,17 @@ def initialization():
   return args
 
   
-  
-#ixa_langs = ["eu"]
-#bilst_langs = ["en", "es"]
 
-spacy_langs=["bg", "da", "el", "sk", "sl", "sv", "ga", "hr", "mt", "lt", "hu", "et", "de", "fr", "es", "it", "pt", "nl", "pl", "cs", "ro", "fi", "lv"]
-
-
-def selectNamesModule(lang):
-  '''
-  if lang in ixa_langs:
-    return sys.modules["ixa_module"]
-  if lang in bilst_langs:
-    return sys.modules["bilst_module"]
-  return sys.modules["bilst_module"] #default
-  '''
-  if lang in spacy_langs:
-    model = spacy_module.load_spacy_model(lang)
-    return [sys.modules["spacy_module"], model]
-
-  #default
-  else:  
-    model = spacy_module.load_spacy_model(lang)
-    return [sys.modules["spacy_module"] , model]
    
    
-   
-def anonymizer_process(i, args, regex_module, source_names_module, target_names_module, address_module, source_names_model, target_names_model, jobs_queue, output_queue):
-  #import prompsit_python_bindings.ixa 
-  #tagger=prompsit_python_bindings.ixa.IXANERPipeline('eu')  
-
+def anonymizer_process(i, args, regex_module, source_names_module, target_names_module, address_module, jobs_queue, output_queue):
   while True:
     job = jobs_queue.get()    
     if job:
       logging.debug("Job {0}".format(job.__repr__()))
       nblock, filein_name = job
       ojob = None
+#      anonymizer_core.anonymize(i, args, regex_module, source_names_module, target_names_module, address_module)
       with open(filein_name, "r") as filein, NamedTemporaryFile(mode="w", delete=False, dir=args.tmp_dir) as fileout:
         logging.debug("Creating temporary filename {0}".format(fileout.name))
         for i in filein:
@@ -147,11 +112,7 @@ def anonymizer_process(i, args, regex_module, source_names_module, target_names_
             src = parts[2].strip()
             trg = parts[3].strip()
 
-          #if not jpype.isThreadAttachedToJVM():
-          #  jpype.attachThreadToJVM()
-          #mode = prompsit_python_bindings.ixa.Mode.ENTITY_DETECTION  
-          #entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module, tagger, mode)
-          entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module, source_names_model, target_names_model)
+          entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module)
           if args.format == "cols":
             anon_source = anonymizer_core.overwrite(src, entities["l1"])
             anon_target = anonymizer_core.overwrite(trg, entities["l2"])
@@ -233,7 +194,7 @@ def reduce_process(output_queue, args):
   args.output.close()
   
   
-def perform_anonymization(args, input_file, regex_module, source_names_module, target_names_module, address_module, source_names_model, target_names_model):
+def perform_anonymization(args, input_file, regex_module, source_names_module, target_names_module, address_module):
   time_start = default_timer()
   logging.info("Starting process")
   logging.info("Running {0} workers at {1} rows per block".format(args.processes, args.block_size))
@@ -252,7 +213,7 @@ def perform_anonymization(args, input_file, regex_module, source_names_module, t
   jobs_queue = Queue(maxsize = maxsize)
   workers = []
   for i in range(worker_count):
-    job = Process(target = anonymizer_process, args = (i, args, regex_module, source_names_module, target_names_module, address_module, source_names_model, target_names_model, jobs_queue, output_queue))
+    job = Process(target = anonymizer_process, args = (i, args, regex_module, source_names_module, target_names_module, address_module, jobs_queue, output_queue))
     job.daemon = True
     job.start()
     workers.append(job)
@@ -305,31 +266,16 @@ def main(args):
  
 #  trgsentences.seek(0)
     
-  names_module_src = selectNamesModule(args.srclang)
-  names_module_trg = selectNamesModule(args.trglang)
+  source_names_module = anonymizer_core.selectNamesModule(args.srclang)
+  target_names_module = anonymizer_core.selectNamesModule(args.trglang)
   
-  if len(names_module_src) == 1:
-    source_names_module = names_module_src[0]
-  elif len(names_module_src) == 2:
-    source_names_module = names_module_src[0]
-    source_names_model = names_module_src[1]
-  
-  if len(names_module_trg) == 1:
-    target_names_module = names_module_trg[0]
-  elif len(names_module_trg) == 2:
-    target_names_module = names_module_trg[0]        
-    target_names_model = names_module_trg[1]
 
-  
-  perform_anonymization(args, sentences, regex_module, source_names_module, target_names_module, address_module, source_names_model, target_names_model)
-  
-#  for src, trg in zip(srcsentences, trgsentences):
-#    entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module)
-#    args.output.write(src.strip("\n")+"\t"+trg.strip("\n")+"\t"+entity.serialize(entities)+"\n")
+  perform_anonymization(args, sentences, regex_module, source_names_module, target_names_module, address_module)
 
   #To do: rebuild tmx files with anotations from anonymizer
   if args.format=="tmx":
    #Rebuild TMX with anon 
+   logging.warning("********************* Unsupported feature!! ********************")
    pass
   logging.info("Program finished")
 

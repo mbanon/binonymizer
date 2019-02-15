@@ -7,7 +7,7 @@ import entity
 """
 Extracts the address entities from a sentence
 """
-def extract(sentences):
+def extract(sentence):
   
   entities = []
   
