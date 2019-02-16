@@ -58,10 +58,6 @@ def selectNamesModule(lang):
     return spacy_module.SpacyObject(lang)
 
 
-
-
-
-
 """
 Extracts all entities from a pair of parallel sentences:
   src: Source sentence

@@ -75,7 +75,17 @@ def initialization():
   logging.info("Arguments processed.")
   return args
 
-  
+"""
+Reads a file (tmx or columns),
+extracts  entities from each pair of parallel sentences,
+writes an anonymized file.
+  args: Arguments given to the script
+  filein: Input file
+  regex_module: Module used to extract entities with regular expressions (emails, phone numbers...)
+  source_names_module: Module (in the form of an object) used to extract NERs in the source 
+  target_names_module: Module (in the form of an object) used to extract NERs in the target
+  address_module: Module used to extract address entities
+"""  
 def anonymizer_process(args, filein, regex_module, source_names_module, target_names_module, address_module):
   nline = 0
   time_start = default_timer()

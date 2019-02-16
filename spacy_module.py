@@ -1,24 +1,35 @@
 #!/usr/bin/env python
 
-#spacy-module:  extracts name entities for EU, writes tempfile with numline, entities.
+#spacy-module:  extracts name entities 
 import spacy
 import logging
 import entity
 import sys
 
 
-
-
 class SpacyObject:
+  """
+  SpacyObject constructor
+  """ 
   def __init__(self):
     self.nlp = None
-
+    
+  """
+  SpacyObject constructor
+    lang: Language
+  """
   def __init__(self, lang):
     self.nlp  = self.load_spacy_model(lang)
-
+    
+  """
+  Retrieves the entity tagger from the SpacyObject
+  """
   def get_tagger():
     return self.nlp        
-    
+  
+  """
+  Downloads language models (if needed) and loads a NER tagger for the given language
+  """  
   def load_spacy_model(self,lang):
     logging.debug("Import lang package for " + lang)
     
@@ -49,7 +60,11 @@ class SpacyObject:
     else:  #default
       spacy.cli.download("xx_ent_wiki_sm")
       return spacy.load("xx_ent_wiki_sm")
-
+      
+      
+  """
+  Normalizes all posible labels given by Spacy into those interesting for anonymizing data
+  """
   def normalize_label(self, label):
     per_labels = ["PER", "PERSON"]
     org_labels = ["ORG", "NORP"]
@@ -68,7 +83,9 @@ class SpacyObject:
       loging.warning("Unknown NER label found: " + label)
       return "OTHER"   
 
-
+  """
+  Extracts named entities from a sentence
+  """
   def extract(self, sentence):  
     entities = []  
     doc = self.nlp(sentence)

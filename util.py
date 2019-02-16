@@ -18,7 +18,7 @@ def logging_setup(args = None):
     h.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
     logger.addHandler(h)
 
-    logger.setLevel(logging.INFO)
+  #logger.setLevel(logging.INFO)
 
     if args != None:
         if not args.quiet:
@@ -26,7 +26,11 @@ def logging_setup(args = None):
         if args.debug:
             logger.setLevel(logging.DEBUG)
 
-
+"""
+Writes the performance stats at the end of the process
+  time_start: Start time (beginning of measure)
+  nline: Amount of lines processed
+"""
 def write_stats(time_start, nline):
   logging.info("Finished")
   elapsed_time = default_timer() - time_start

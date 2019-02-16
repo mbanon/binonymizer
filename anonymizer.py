@@ -85,7 +85,13 @@ def initialization():
   logging.info("Arguments processed.")
   return args
 
-  
+"""
+  args: Arguments given to the script
+  regex_module: Module used to extract entities with regular expressions (emails, phone numbers...)
+  source_names_module: Module (in the form of an object) used to extract NERs in the source 
+  target_names_module: Module (in the form of an object) used to extract NERs in the target
+  address_module: Module used to extract address entities
+"""   
 def anonymizer_process(i, args, regex_module, source_names_module, target_names_module, address_module, jobs_queue, output_queue):
   while True:
     job = jobs_queue.get()    
@@ -187,6 +193,14 @@ def reduce_process(output_queue, args):
   
   args.output.close()
   
+"""
+  args: Arguments given to the script
+  input_file: Input file
+  regex_module: Module used to extract entities with regular expressions (emails, phone numbers...)
+  source_names_module: Module (in the form of an object) used to extract NERs in the source 
+  target_names_module: Module (in the form of an object) used to extract NERs in the target
+  address_module: Module used to extract address entities
+"""  
   
 def perform_anonymization(args, input_file, regex_module, source_names_module, target_names_module, address_module):
   time_start = default_timer()
