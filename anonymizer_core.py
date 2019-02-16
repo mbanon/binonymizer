@@ -8,10 +8,12 @@
 
 
 import logging
-
+import sys
+import os
 
 import merger_module
 import entity
+
 
 __author__ = "Marta Bañón"
 __version__ = "Version 0.1 # 05/10/2018 # Initial release # Marta Bañón"
@@ -32,13 +34,15 @@ def selectNamesModule(lang):
   if lang in ixa_langs:
     logging.warning("****************UNSUPPORTED MODULE!!!****************")
     #TO DO
-    sys.path.append(os.getcwd() + "/prompsit-python-bindings/")
-
+    #sys.path.append(os.getcwd() + "/prompsit-python-bindings/")
+    sys.path.append(os.path.dirname(sys.argv[0])+"/prompsit-python-bindings/")
+    print(os.path.dirname(sys.argv[0])+"/prompsit-python-bindings/")
+    
     import jpype
     import prompsit_python_bindings.ixa
     import ixa_module
     ixa_object = ixa_module.IxaObject(lang)
-    ixa_object.attachThreadToJVM()
+    #ixa_object.attachThreadToJVM()
     return ixa_object
 
   if lang in bilst_langs:

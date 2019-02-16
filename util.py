@@ -2,6 +2,8 @@
 
 import logging
 import sys
+from timeit import default_timer
+
 
 # Logging config
 def logging_setup(args = None):
@@ -25,3 +27,9 @@ def logging_setup(args = None):
             logger.setLevel(logging.DEBUG)
 
 
+def write_stats(time_start, nline):
+  logging.info("Finished")
+  elapsed_time = default_timer() - time_start
+  logging.info("Total: {0} rows".format(nline))
+  logging.info("Elapsed time {0:.2f} s".format(elapsed_time))
+  logging.info("Troughput: {0} rows/s".format(int((nline*1.0)/elapsed_time)))

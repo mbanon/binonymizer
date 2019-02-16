@@ -27,21 +27,17 @@ from timeit import default_timer
 from multiprocessing import Queue, Process,  cpu_count
 from heapq import heappush, heappop
 
-
-
+import util
 import merger_module
 import address_module
 import regex_module
 import entity
-import sys
 
 
 
 try:
-  from .util import logging_setup
   from .tmx_utils import tmx2text
 except (ImportError, SystemError):
-  from util import logging_setup
   from tmx_utils import tmx2text
   
   
@@ -81,7 +77,7 @@ def initialization():
 
   # Validating & parsing
   args = parser.parse_args()
-  logging_setup(args)
+  util.logging_setup(args)
   logging.debug("Arguments processed: {}".format(str(args)))
   if args.format=="tmx" and args.input.name=="<stdin>":
     logging.error("Cannot process TMX from standard input.")
@@ -90,9 +86,6 @@ def initialization():
   return args
 
   
-
-   
-   
 def anonymizer_process(i, args, regex_module, source_names_module, target_names_module, address_module, jobs_queue, output_queue):
   while True:
     job = jobs_queue.get()    
@@ -113,6 +106,7 @@ def anonymizer_process(i, args, regex_module, source_names_module, target_names_
             trg = parts[3].strip()
 
           entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module)
+
           if args.format == "cols":
             anon_source = anonymizer_core.overwrite(src, entities["l1"])
             anon_target = anonymizer_core.overwrite(trg, entities["l2"])
@@ -236,18 +230,13 @@ def perform_anonymization(args, input_file, regex_module, source_names_module, t
   reduce.join()
   
   #Stats
-  logging.info("Finished")
-  elapsed_time = default_timer() - time_start
-  logging.info("Total: {0} rows".format(nline))
-  logging.info("Elapsed time {0:.2f} s".format(elapsed_time))
-  logging.info("Troughput: {0} rows/s".format(int((nline*1.0)/elapsed_time)))
+  util.write_stats(time_start, nline)
+  
 
 def main(args):
   logging.info("Executing main program...")
   sentences = NamedTemporaryFile(mode="w+", delete=True, dir=args.tmp_dir)
   
-  #To do: allow raw files 
-  #To do: keep format in raw input file, just add column
   if args.format=="tmx":
     try:
       args.input.close()
@@ -264,8 +253,6 @@ def main(args):
     sentences = args.input
       
  
-#  trgsentences.seek(0)
-    
   source_names_module = anonymizer_core.selectNamesModule(args.srclang)
   target_names_module = anonymizer_core.selectNamesModule(args.trglang)
   
@@ -281,7 +268,7 @@ def main(args):
 
 if __name__ == '__main__':
   try:
-    logging_setup()
+    util.logging_setup()
     args = initialization() # Parsing parameters
     main(args)  # Running main program
   except Exception as ex:

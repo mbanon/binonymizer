@@ -28,6 +28,7 @@ class IxaObject():
     self.mode = None
 
   def __init__(self, lang):
+    self.attachThreadToJVM()
     self.tagger  = prompsit_python_bindings.ixa.IXANERPipeline(lang)
     self.mode = prompsit_python_bindings.ixa.Mode.ENTITY_DETECTION
 
