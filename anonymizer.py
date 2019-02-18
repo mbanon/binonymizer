@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#anon!/usr/bin/env python
 
 
 #anonymizer.py: Entry point.
@@ -92,10 +92,12 @@ def initialization():
   target_names_module: Module (in the form of an object) used to extract NERs in the target
   address_module: Module used to extract address entities
 """   
-def anonymizer_process(i, args, regex_module, source_names_module, target_names_module, address_module, jobs_queue, output_queue):
-  while True:
+def anonymizer_process(i, args, regex_module, address_module, jobs_queue, output_queue):  
+  while True:  
     job = jobs_queue.get()    
     if job:
+      source_names_module = anonymizer_core.selectNamesModule(args.srclang)
+      target_names_module = anonymizer_core.selectNamesModule(args.trglang)
       logging.debug("Job {0}".format(job.__repr__()))
       nblock, filein_name = job
       ojob = None
@@ -202,7 +204,7 @@ def reduce_process(output_queue, args):
   address_module: Module used to extract address entities
 """  
   
-def perform_anonymization(args, input_file, regex_module, source_names_module, target_names_module, address_module):
+def perform_anonymization(args, input_file, regex_module, address_module):
   time_start = default_timer()
   logging.info("Starting process")
   logging.info("Running {0} workers at {1} rows per block".format(args.processes, args.block_size))
@@ -221,7 +223,8 @@ def perform_anonymization(args, input_file, regex_module, source_names_module, t
   jobs_queue = Queue(maxsize = maxsize)
   workers = []
   for i in range(worker_count):
-    job = Process(target = anonymizer_process, args = (i, args, regex_module, source_names_module, target_names_module, address_module, jobs_queue, output_queue))
+ 
+    job = Process(target = anonymizer_process, args = (i, args, regex_module, address_module, jobs_queue, output_queue))
     job.daemon = True
     job.start()
     workers.append(job)
@@ -267,11 +270,11 @@ def main(args):
     sentences = args.input
       
  
-  source_names_module = anonymizer_core.selectNamesModule(args.srclang)
-  target_names_module = anonymizer_core.selectNamesModule(args.trglang)
+  #source_names_module = anonymizer_core.selectNamesModule(args.srclang)
+  #target_names_module = anonymizer_core.selectNamesModule(args.trglang)
   
 
-  perform_anonymization(args, sentences, regex_module, source_names_module, target_names_module, address_module)
+  perform_anonymization(args, sentences, regex_module,  address_module)
 
   #To do: rebuild tmx files with anotations from anonymizer
   if args.format=="tmx":

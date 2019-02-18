@@ -32,14 +32,13 @@ Retrieves a names module  (NER tagger) object, configured and ready to use with 
 def selectNamesModule(lang):
 
   if lang in ixa_langs:
-    logging.warning("****************UNSUPPORTED MODULE!!!****************")
     #TO DO
     #sys.path.append(os.getcwd() + "/prompsit-python-bindings/")
     sys.path.append(os.path.dirname(sys.argv[0])+"/prompsit-python-bindings/")
     print(os.path.dirname(sys.argv[0])+"/prompsit-python-bindings/")
     
-    import jpype
-    import prompsit_python_bindings.ixa
+#    import jpype
+#    import prompsit_python_bindings.ixa
     import ixa_module
     ixa_object = ixa_module.IxaObject(lang)
     #ixa_object.attachThreadToJVM()
@@ -108,8 +107,11 @@ def overwrite(text, entities):
   prev_pos = 0
   
   for e in sorted_entities:
+    #print("Prev pos: " + str(prev_pos))
+    #print("e.start: " + str(e.start))
+    #print("Index: " + str(prev_pos)
     sub = text[prev_pos:e.start]+get_replacement(e)
-    prev_pos = e.start + e.length 
+    prev_pos = e.start + e.length
     slices.append(sub)
   else:
   #last slice

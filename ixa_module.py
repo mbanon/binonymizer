@@ -4,6 +4,9 @@
 import logging
 import entity
 import sys
+import jpype
+import prompsit_python_bindings.ixa
+
 
 #TO DO
 #sys.path.append("/home/mbanon/project/anonymizer/anonymizer/prompsit-python-bindings/")

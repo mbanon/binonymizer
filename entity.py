@@ -9,8 +9,8 @@ class Entity:
     entity: Content of the entity (string)   
   """
   def __init__(self, start, length, type, entity):
-    self.start = start
-    self.length = length
+    self.start = int(start)
+    self.length = int(length)
     self.type = type
     self.entity = entity
 
