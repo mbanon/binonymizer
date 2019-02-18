@@ -1,4 +1,37 @@
 import json
+import logging
+from enum import Enum, auto
+
+
+class Label(Enum):
+  PER=auto()
+  ORG=auto()
+  EMAIL=auto()
+  PHONE=auto()
+  ADDRESS=auto()
+  ID=auto()
+  MISC=auto()
+  OTHER=auto()
+
+  def __str__(self):
+    return self.name
+    
+  def __repr__(self):
+    return self.name
+       
+  """
+  Gets a Label from a string or a Label object
+  """
+  def getLabel(label):
+
+    if isinstance(label, Label):
+      return label      
+    else:
+      try:
+        return Label[label]
+      except Exception:
+        logging.warning("Unknown type: " + str(label))
+        return Label.OTHER    
 
 class Entity:
   """
@@ -11,7 +44,7 @@ class Entity:
   def __init__(self, start, length, type, entity):
     self.start = int(start)
     self.length = int(length)
-    self.type = type
+    self.type = Label.getLabel(type)
     self.entity = entity
 
   """
@@ -24,7 +57,8 @@ class Entity:
     d["type"] = self.type
     d["entity"] = self.entity
     return d
-  
+    
+
   """
   Converts an Entity object into a JSON string
   """

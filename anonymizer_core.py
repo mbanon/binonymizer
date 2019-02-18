@@ -76,8 +76,6 @@ def extract(src, trg, srclang, trglang, regex_module, src_names_module, trg_name
   
   src_addresses_results = address_module.extract(src)
   trg_addresses_results = address_module.extract(trg)
-  #src_names_results = src_names_module.extract(src, tagger, mode) --> IXA and BILST should be working as class/objects, as for spacy
-  #trg_names_results = trg_names_module.extract(trg, tagger, mode)
   src_names_results = src_names_module.extract(src)
   trg_names_results = trg_names_module.extract(trg)
 

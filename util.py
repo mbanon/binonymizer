@@ -2,6 +2,7 @@
 
 import logging
 import sys
+import entity
 from timeit import default_timer
 
 
@@ -37,3 +38,25 @@ def write_stats(time_start, nline):
   logging.info("Total: {0} rows".format(nline))
   logging.info("Elapsed time {0:.2f} s".format(elapsed_time))
   logging.info("Troughput: {0} rows/s".format(int((nline*1.0)/elapsed_time)))
+
+
+"""
+Normalizes all posible labels given by NER taggers into those interesting for anonymizing data
+"""
+def normalize_label(label):
+  per_labels = ["PER", "PERSON", "I-PER"]
+  org_labels = ["ORG", "NORP", "I-ORG"]
+  misc_labels = ["MISC", "PRODUCT"]
+  unwanted_labels = ["FAC", "GPE", "LOC", "EVENT", "WORK_OF_ART", "LAW", "LANGUAGE", "DATE", "TIME", "PERCENT", "MONEY", "QUANTITY", "ORDINAL", "CARDINAL", "I-LOC"]
+
+  if label in unwanted_labels:
+    return None  
+  if label in per_labels:
+    return entity.Label.PER
+  elif label in org_labels:
+    return entity.Label.ORG
+  elif label in misc_labels:
+    return entity.Label.MISC
+  else:
+    loging.warning("Unknown NER label found: " + str(label))
+    return entity.Label.OTHER   

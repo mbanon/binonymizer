@@ -5,6 +5,7 @@ import spacy
 import logging
 import entity
 import sys
+import util
 
 
 class SpacyObject:
@@ -61,27 +62,6 @@ class SpacyObject:
       spacy.cli.download("xx_ent_wiki_sm")
       return spacy.load("xx_ent_wiki_sm")
       
-      
-  """
-  Normalizes all posible labels given by Spacy into those interesting for anonymizing data
-  """
-  def normalize_label(self, label):
-    per_labels = ["PER", "PERSON"]
-    org_labels = ["ORG", "NORP"]
-    misc_labels = ["MISC", "PRODUCT"]
-    unwanted_labels = ["FAC", "GPE", "LOC", "EVENT", "WORK_OF_ART", "LAW", "LANGUAGE", "DATE", "TIME", "PERCENT", "MONEY", "QUANTITY", "ORDINAL", "CARDINAL"]
-
-    if label in unwanted_labels:
-      return None  
-    if label in per_labels:
-      return "PER"
-    elif label in org_labels:
-      return "ORG"
-    elif label in misc_labels:
-      return "MISC"
-    else:
-      loging.warning("Unknown NER label found: " + label)
-      return "OTHER"   
 
   """
   Extracts named entities from a sentence
@@ -91,7 +71,7 @@ class SpacyObject:
     doc = self.nlp(sentence)
     for t in doc.ents:
     #https://spacy.io/api/span#attributes
-      normalized_label = self.normalize_label(t.label_)      
+      normalized_label = util.normalize_label(t.label_)      
       if normalized_label != None:
         ent = entity.Entity(t.start_char, t.end_char - t.start_char, normalized_label, t.text)
         entities.append(ent)
