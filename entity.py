@@ -54,7 +54,7 @@ class Entity:
     d=dict()
     d["start"] = self.start
     d["length"] = self.length
-    d["type"] = self.type
+    d["type"] = self.type.name
     d["entity"] = self.entity
     return d
     
