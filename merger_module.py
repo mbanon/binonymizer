@@ -23,11 +23,12 @@ def mono_merge(sentence, entities):
   index = 0
   entities = entity.sort_by_position(entities)
   while index < len(entities):  
-    current_ent = entities[index]
+    
     #last item
     if index == len(entities)-1:
       return entities
     else:   
+      current_ent = entities[index]
       next_ent = entities[index+1]
       cur_end = current_ent.start + current_ent.length
       next_end = next_ent.start + next_ent.length
@@ -61,27 +62,58 @@ Solves tagging  of named entities when only in one side of the parallel sentence
   src_entities: List of entities found in the source sentence
   trg_sentence: Target sentence
   trg_entities: List of entities found in the target sentence
-  
-  
 """
 def para_merge(src_sentence, src_entities, trg_sentence, trg_entities):
   """
-  New approach on merging NER entities:
-
-  * Entity text is in A and B:
+  * CASE A: Entity text is in A and B:
     * Keep the label as in A
-  * Entity text is in A and not in B:
-    * Entity has no uppercased words (excluding string beginning): Ignore in both
+  * CASE B: Entity text is in A and not in B:
+    * CASE B1: Entity has no uppercased words (excluding string beginning): Ignore in both
       * example: "My cousin's friend is ugly" {} - "El amigo de mi primo es feo" {El amigo de mi primo: PER}
       * becomes: "My cousin's friend is ugly" {} - "El amigo de mi primo es feo" {}
-    * Entity text has an uppercased part, the part in uppercase is not in any entity in B, and the uppercased part can be found also in B : Tag the entity in both
+    * CASE B2: Entity text has an uppercased part, the part in uppercase is not in any entity in B, and the uppercased part can be found also in B : Tag the entity in both
       * example: "Tesla's Model S is expensive" {Tesla's Model S: MISC} - "El Model S de Tesla es caro" {Tesla: ORG}
       * becomes: "Tesla's Model S is expensive" {Tesla's Model S: MISC} - "El Model S de Tesla es caro" {Model S: MISC, Tesla: ORG}
-    * Entity text is not present in B: Keep the entity in A, it's unsafe to remove 
+    * CASE B3: Entity text is not present in B: Keep the entity in A, it's unsafe to remove 
        * example: "Tesla's Model S is expensive" {Tesla's Model S: MISC} - "El Modelo S de Tesla es caro" {Tesla: ORG}
        * remains the same.
   """
-  return src_entities, trg_entities   
+  if len(src_entities)==0 and len(trg_entities)==0:
+    #nothing to do here 
+    return src_entities, trg_entities
+
+  src_index = 0
+  trg_index = 0  
+
+  while src_index < len(src_entities):
+    current_src_entity = src_entities[src_index]
+    found = false
+    while trg_index < len(trg_entities):
+      current_trg_entity = trg_entities[trg_index]
+      #CASE A
+      if current_src_entity.entity == current_trg_entity.entity:
+        found = true
+        current_trg_entity.type = current_src_entity.type
+      trg_index += 1
+    if found == false:
+      #CASE B
+      if current_src_entity.start == 0:
+        str_to_check = current_src_entity.entity[1:]  #Remove first char if it's beginning of sentence
+      else:
+        str_to_check = current_src_entity.entity  
+      if (any(x.isupper() for x in str_to_check)):
+        uppercased_part = blablabla
+        if uppercased_part in target_sentence: #it's ok it is's in another entity because after para_merge comes mono_merge to solve overlappings
+        #CASE B2
+      else:
+        #CASE B1
+            
+              
+    src_index += 1  
+
+  return src_entities, trg_entities                      
+        
+
     
 """
 Merges entities extracted from a parallel sentence
