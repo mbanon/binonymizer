@@ -4,6 +4,7 @@
 
 import logging
 import entity
+import util
 
 
 """
@@ -34,11 +35,6 @@ def mono_merge(sentence, entities):
       next_end = next_ent.start + next_ent.length
       #Overlapping:
       if (current_ent.start <= next_ent.start) and (cur_end >= next_ent.start):
-        #print("*************** OVERLAPPING ***************")
-        #print("ENTITIES: " + entity.serializeArray(entities))
-        #print("CURRENT: " + current_ent.serializeEntity())
-        #print("NEXT: " + next_ent.serializeEntity())
-  
         new_start = current_ent.start  #because entities are sorted 
         new_end = max(cur_end, next_end)
         new_length = new_end - new_start
@@ -50,7 +46,6 @@ def mono_merge(sentence, entities):
         del entities[index+1]
         del entities[index]        
         entities.append(new_entity)
-        #print("MERGED: " + new_entity.serializeEntity())
         entities = entity.sort_by_position(entities)
         index = 0
       else:
@@ -84,33 +79,97 @@ def para_merge(src_sentence, src_entities, trg_sentence, trg_entities):
 
   src_index = 0
   trg_index = 0  
-
+  matched = [] #Keeps all entities in target that matched entities in source
+  
   while src_index < len(src_entities):
     current_src_entity = src_entities[src_index]
-    found = false
+
+    found = False
+    
+    if current_src_entity.start == 0:
+      str_to_check = current_src_entity.entity[1:]  #Remove first char if it's beginning of sentence
+    else:
+      str_to_check = current_src_entity.entity  
+    if (any(x.isupper() for x in str_to_check)):
+      #Has uppercased parts
+      uppercased_part = util.extractUppercased(str_to_check)
+    else:	
+      uppercased_part = None
+
     while trg_index < len(trg_entities):
       current_trg_entity = trg_entities[trg_index]
       #CASE A
       if current_src_entity.entity == current_trg_entity.entity:
-        found = true
         current_trg_entity.type = current_src_entity.type
+        found = True
+        matched.append(current_trg_entity)
       trg_index += 1
-    if found == false:
-      #CASE B
-      if current_src_entity.start == 0:
-        str_to_check = current_src_entity.entity[1:]  #Remove first char if it's beginning of sentence
-      else:
-        str_to_check = current_src_entity.entity  
-      if (any(x.isupper() for x in str_to_check)):
-        uppercased_part = blablabla
-        if uppercased_part in target_sentence: #it's ok it is's in another entity because after para_merge comes mono_merge to solve overlappings
-        #CASE B2
-      else:
-        #CASE B1
-            
-              
-    src_index += 1  
 
+
+    #CASE B2
+    if uppercased_part != None and  uppercased_part in trg_sentence: #it's ok even if it is in another entity because after para_merge comes mono_merge to solve overlappings
+      new_entity_start = trg_sentence.index(uppercased_part)
+      new_entity_length = len(uppercased_part)
+      new_entity_type = current_src_entity.type
+      new_entity_text = uppercased_part
+      new_entity = entity.Entity(new_entity_start, new_entity_length, new_entity_type, new_entity_text)
+      trg_entities.append(new_entity)
+      matched.append(new_entity)
+      found = True
+            
+    if found==False and  uppercased_part==None:
+      #No uppercases: CASE B1
+      del src_entities[src_index]
+      src_index = 0 #Start from the beginning again
+      trg_index = 0
+    else:  
+      #Case base (found entity) or CASE B3 (unsafe to remove, ignore and keep going)
+      src_index += 1  
+      trg_index = 0
+
+
+  #Now, do a lighter version of the same but with those entities in target that didn't match anything in the source  
+  not_matched = list(set(trg_entities) - set(matched))
+
+  if len(not_matched) > 0:
+    src_index = 0
+    not_matched_index = 0
+    
+    while not_matched_index < len(not_matched):
+      current_trg_entity = not_matched[not_matched_index]
+      found = False
+      if current_trg_entity.start == 0:
+        str_to_check = current_trg_entity.entity[1:]
+      else:
+        str_to_check = current_trg_entity.entity
+      if (any(x.isupper() for x in str_to_check)):
+        uppercased_part = util.extractUppercased(str_to_check)
+      else:
+        uppercased_part = None
+      while src_index < len(src_entities):
+        current_src_entity = src_entities[src_index]
+        if current_trg_entity.entity == current_src_entity.entity:
+          found = True
+        src_index += 1
+      if uppercased_part != None and uppercased_part in src_sentence:
+        new_entity_start = src_sentence.index(uppercased_part)
+        new_entity_length = len(uppercased_part)
+        new_entity_type = current_trg_entity.type
+        new_entity_text = uppercased_part
+        new_entity = entity.Entity(new_entity_start, new_entity_length, new_entity_type, new_entity_text)
+        src_entities.append(new_entity)
+        found = True
+      if found == False and uppercased_part == None:
+        trg_index = trg_entities.index(current_trg_entity)
+        del trg_entities[trg_index]
+        del not_matched[not_matched_index]    
+        src_index = 0
+        not_matched_index = 0
+      else:
+        src_index += 1
+        not_matched_index += 1         
+      
+      
   return src_entities, trg_entities                      
         
 

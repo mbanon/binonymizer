@@ -60,3 +60,28 @@ def normalize_label(label):
   else:
     loging.warning("Unknown NER label found: " + str(label))
     return entity.Label.OTHER   
+    
+"""
+Extracts uppercased words from a string, with lowercased words between them
+"""
+def extractUppercased(sentence):
+  words = sentence.split()  #Naive tokenizing
+  nonefound =True
+  extracted = []
+  pending = []
+  
+  for word in words:
+    if word[0].isupper():
+      nonefound = False
+      extracted.extend(pending)
+      pending = []
+      extracted.append(word)    
+    else: 
+      if nonefound:
+        continue
+      else:
+        pending.append(word)
+         
+
+  return " ".join(extracted)
+  
