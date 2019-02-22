@@ -1,6 +1,6 @@
-# anonymizer
+# binonymizer
 
-Anonymizer is a tool in Python that aims at tagging personal data<sup>1</sup> in a parallel corpus.
+Binonymizer is a tool in Python that aims at tagging personal data<sup>1</sup> in a parallel corpus.
 
 For example, for a input like:
 
@@ -8,14 +8,14 @@ For example, for a input like:
 URL1  URL2  My name is Marta and my email is fake@email.com    Mi nombre es Marta y mi email es fake@email.com
 ```
 
-Anonymizer's output will be:
+Binonymizer's output will be:
 
 ```
 URL1 URL2 My name is <entity class="PER">Marta</entity> and my email is <entity class="EMAIL">fake@email.com</entity> Mi nombre es <entity class="PER">Marta</entity> y mi email es <entity class="EMAIL">fake@email.com</entity>
 ```
 ## Detectable entity tipes
 
-Currently, the Anonymizer is able to detect and tag the following types of entities:
+Currently, the Binonymizer is able to detect and tag the following types of entities:
 
 * PER: person names
 * ORG: organism and company names
@@ -28,7 +28,7 @@ Currently, the Anonymizer is able to detect and tag the following types of entit
 
 ## Installation & Requirements
 
-Anonymizer works with Python 3.6.
+Binonymizer works with Python 3.6.
 
 Requirements can be installed by using `pip`:
 
@@ -39,10 +39,10 @@ Language-dependant packages and models are automatically downloaded and installe
 
 ## Usage
 
-Anonymizer can be run with:
+Binonymizer can be run with:
 
 ```bash
-anonymizer.py [-h] --format {tmx,cols} [--tmp_dir TMP_DIR]
+binonymizer.py [-h] --format {tmx,cols} [--tmp_dir TMP_DIR]
                      [-b BLOCK_SIZE] [-p PROCESSES] [-q] [--debug]
                      [--logfile LOGFILE] [-v]
                      input [output] srclang trglang
@@ -71,14 +71,14 @@ anonymizer.py [-h] --format {tmx,cols} [--tmp_dir TMP_DIR]
 
 ### Example
 ```bash
-python3.6 anonymizer.py corpus.en-es.raw corpus.en-es.anon en es --format cols  --tmp_dir /tmpdir -b50000 -p31 
+python3.6 binonymizer.py corpus.en-es.raw corpus.en-es.anon en es --format cols  --tmp_dir /tmpdir -b50000 -p31 
 ```
-This will read the corpus "corpus.en-es.raw", which is in a column-based format, extracting personal data and writing the tagged output in "corpus.en-es.anon". Anonymizer will run in blocks of 50000 sentences, using 31 cores, and writing temporary files in /tmpdir
+This will read the corpus "corpus.en-es.raw", which is in a column-based format, extracting personal data and writing the tagged output in "corpus.en-es.anon". Binonymizer will run in blocks of 50000 sentences, using 31 cores, and writing temporary files in /tmpdir
 
 
 ## Lite version
 
-Although `Anonymizer` makes use of parallelization  by distributing workload to the available cores, some users might prefer to implement their own parallelization strategies. For that reason, a single-thread version of the scripts is provided: `anonymizer_lite.py`. The usage is exactly the same as for the full version, but omitting the blocksize (-b) and processes (-p) parameter.
+Although `binonymizer` makes use of parallelization  by distributing workload to the available cores, some users might prefer to implement their own parallelization strategies. For that reason, a single-thread version of the scripts is provided: `binonymizer_lite.py`. The usage is exactly the same as for the full version, but omitting the blocksize (-b) and processes (-p) parameter.
 
 
 ## TO DO
