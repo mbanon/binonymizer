@@ -9,21 +9,6 @@ import jpype
 import prompsit_python_bindings.ixa
 
 
-#TO DO
-#sys.path.append("/home/mbanon/project/anonymizer/anonymizer/prompsit-python-bindings/")
-
-#import prompsit_python_bindings.ixa as ixa
-
-#
-#import sys
-#
-##TO DO
-#sys.path.append("/home/mbanon/project/anonymizer/anonymizer/prompsit-python-bindings/")
-#import prompsit_python_bindings.ixa
-#
-#tagger=prompsit_python_bindings.ixa.IXANERPipeline('eu')  
-
-
 
 class IxaObject():
 

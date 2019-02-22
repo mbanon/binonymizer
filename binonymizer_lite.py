@@ -1,16 +1,16 @@
 #!/usr/bin/env python
 
 
-#anonymizer_lite.py: Monothread entry point.
-#Wraps the anonymizer-core.py, preparing the input and processing the output. 
+#binonymizer_lite.py: Monothread entry point.
+#Wraps the binonymizer-core.py, preparing the input and processing the output. 
 #Takes the entry file (raw src-trg, tmx...), 
 #and extracting the source and the target sentences,
 #generating (in the case of tmx files) a raw parallel corpus,
-#that will be input to the anonymizer-core.
-#when the anonymizer-core.py finishes, builds the annotated TMXs (if the entry was a TMX file)
+#that will be input to the binonymizer-core.
+#when the binonymizer-core.py finishes, builds the annotated TMXs (if the entry was a TMX file)
 
 
-import anonymizer_core
+import binonymizer_core
 import argparse
 import logging
 import os
@@ -86,7 +86,7 @@ writes an anonymized file.
   target_names_module: Module (in the form of an object) used to extract NERs in the target
   address_module: Module used to extract address entities
 """  
-def anonymizer_process(args, filein, regex_module, source_names_module, target_names_module, address_module):
+def binonymizer_process(args, filein, regex_module, source_names_module, target_names_module, address_module):
   nline = 0
   time_start = default_timer()
   with  open(args.output.name, "w") as fileout:
@@ -100,11 +100,11 @@ def anonymizer_process(args, filein, regex_module, source_names_module, target_n
         src = parts[2].strip()
         trg = parts[3].strip()
 
-      entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module)
+      entities = binonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module)
 
       if args.format == "cols":
-        anon_source = anonymizer_core.overwrite(src, entities["l1"])
-        anon_target = anonymizer_core.overwrite(trg, entities["l2"])
+        anon_source = binonymizer_core.overwrite(src, entities["l1"])
+        anon_target = binonymizer_core.overwrite(trg, entities["l2"])
         parts[2] = anon_source
         parts[3] = anon_target        
         fileout.write("\t".join(parts))
@@ -141,13 +141,13 @@ def main(args):
     sentences = args.input
       
  
-  source_names_module = anonymizer_core.selectNamesModule(args.srclang)
-  target_names_module = anonymizer_core.selectNamesModule(args.trglang)
+  source_names_module = binonymizer_core.selectNamesModule(args.srclang)
+  target_names_module = binonymizer_core.selectNamesModule(args.trglang)
   
 
-  anonymizer_process(args, sentences, regex_module, source_names_module, target_names_module, address_module)
+  binonymizer_process(args, sentences, regex_module, source_names_module, target_names_module, address_module)
 
-  #To do: rebuild tmx files with anotations from anonymizer
+  #To do: rebuild tmx files with anotations from binonymizer
   if args.format=="tmx":
    #Rebuild TMX with anon 
    logging.warning("********************* Unsupported feature!! ********************")

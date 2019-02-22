@@ -1,13 +1,13 @@
-#anon!/usr/bin/env python
+#!/usr/bin/env python
 
 
-#anonymizer.py: Entry point.
-#Wraps the anonymizer-core.py, preparing the input and processing the output. 
+#binonymizer.py: Entry point.
+#Wraps the binonymizer-core.py, preparing the input and processing the output. 
 #Takes the entry file (raw src-trg, tmx...), parallelizing if needed,
 #and extracting the source and the target sentences,
 #generating (in the case of tmx files) a raw parallel corpus,
-#that will be input to the anonymizer-core.
-#when the anonymizer-core.py finishes, builds the annotated TMXs (if the entry was a TMX file)
+#that will be input to the binonymizer-core.
+#when the binonymizer-core.py finishes, builds the annotated TMXs (if the entry was a TMX file)
 
 
 
@@ -15,7 +15,7 @@
 #or at document scope (in case of a lot of files with few lines) 
 
 
-import anonymizer_core
+import binonymizer_core
 import argparse
 import logging
 import os
@@ -92,16 +92,16 @@ def initialization():
   target_names_module: Module (in the form of an object) used to extract NERs in the target
   address_module: Module used to extract address entities
 """   
-def anonymizer_process(i, args, regex_module, address_module, jobs_queue, output_queue):  
+def binonymizer_process(i, args, regex_module, address_module, jobs_queue, output_queue):  
   while True:  
     job = jobs_queue.get()    
     if job:
-      source_names_module = anonymizer_core.selectNamesModule(args.srclang)
-      target_names_module = anonymizer_core.selectNamesModule(args.trglang)
+      source_names_module = binonymizer_core.selectNamesModule(args.srclang)
+      target_names_module = binonymizer_core.selectNamesModule(args.trglang)
       logging.debug("Job {0}".format(job.__repr__()))
       nblock, filein_name = job
       ojob = None
-#      anonymizer_core.anonymize(i, args, regex_module, source_names_module, target_names_module, address_module)
+
       with open(filein_name, "r") as filein, NamedTemporaryFile(mode="w", delete=False, dir=args.tmp_dir) as fileout:
         logging.debug("Creating temporary filename {0}".format(fileout.name))
         for i in filein:
@@ -113,11 +113,11 @@ def anonymizer_process(i, args, regex_module, address_module, jobs_queue, output
             src = parts[2].strip()
             trg = parts[3].strip()
 
-          entities = anonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module)
+          entities = binonymizer_core.extract( src, trg, args.srclang, args.trglang, regex_module, source_names_module, target_names_module, address_module)
 
           if args.format == "cols":
-            anon_source = anonymizer_core.overwrite(src, entities["l1"])
-            anon_target = anonymizer_core.overwrite(trg, entities["l2"])
+            anon_source = binonymizer_core.overwrite(src, entities["l1"])
+            anon_target = binonymizer_core.overwrite(trg, entities["l2"])
             parts[2] = anon_source
             parts[3] = anon_target        
             fileout.write("\t".join(parts))
@@ -204,7 +204,7 @@ def reduce_process(output_queue, args):
   address_module: Module used to extract address entities
 """  
   
-def perform_anonymization(args, input_file, regex_module, address_module):
+def perform_binonymization(args, input_file, regex_module, address_module):
   time_start = default_timer()
   logging.info("Starting process")
   logging.info("Running {0} workers at {1} rows per block".format(args.processes, args.block_size))
@@ -224,7 +224,7 @@ def perform_anonymization(args, input_file, regex_module, address_module):
   workers = []
   for i in range(worker_count):
  
-    job = Process(target = anonymizer_process, args = (i, args, regex_module, address_module, jobs_queue, output_queue))
+    job = Process(target = binonymizer_process, args = (i, args, regex_module, address_module, jobs_queue, output_queue))
     job.daemon = True
     job.start()
     workers.append(job)
@@ -270,13 +270,11 @@ def main(args):
     sentences = args.input
       
  
-  #source_names_module = anonymizer_core.selectNamesModule(args.srclang)
-  #target_names_module = anonymizer_core.selectNamesModule(args.trglang)
-  
 
-  perform_anonymization(args, sentences, regex_module,  address_module)
 
-  #To do: rebuild tmx files with anotations from anonymizer
+  perform_binonymization(args, sentences, regex_module,  address_module)
+
+  #To do: rebuild tmx files with anotations from binonymizer
   if args.format=="tmx":
    #Rebuild TMX with anon 
    logging.warning("********************* Unsupported feature!! ********************")
