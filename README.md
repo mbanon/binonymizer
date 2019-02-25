@@ -86,7 +86,7 @@ Although `binonymizer` makes use of parallelization  by distributing workload to
 * Fully support TMX input/output
 * Address recognition
 * GPU support
-* Automate Prompsit-python-bindings submodule ( git submodule update --remote ,  ./download-data.sh)
+* Automate Prompsit-python-bindings submodule ( git submodule update --remote ,  python3.6 setup.py install)
 
 
 
