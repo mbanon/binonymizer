@@ -2,7 +2,12 @@
 
 #bilst-module: extracts name entities for ES/EN, writes tempfile with numline, entities.
 import logging
-import entity
+
+try:
+  from . import entity
+except (ImportError, SystemError):
+  import entity
+
 
 def extract(sentence, tagger, mode):
   

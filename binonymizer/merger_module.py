@@ -3,8 +3,14 @@
 # merge-module: Merges the entities extracted by the other modules, avoiding duplicates. 
 
 import logging
-import entity
-import util
+
+
+try:
+  from . import util
+  from . import entity
+except (ImportError, SystemError):
+  import util
+  import entity
 
 
 """

@@ -2,11 +2,19 @@
 
 #ixa-module:  extracts name entities for EU, writes tempfile with numline, entities.
 import logging
-import entity
-import util
 import sys
 import jpype
 import prompsit_python_bindings.ixa
+
+
+try:
+  from . import util
+  from . import entity  
+  #from .prompsit_python_bindings import ixa
+except (ImportError, SystemError):
+  import util
+  import entity
+  #import prompsit_python_bindings.ixa
 
 
 

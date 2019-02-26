@@ -2,8 +2,12 @@
 
 import logging
 import sys
-import entity
 from timeit import default_timer
+
+try:
+  from . import entity
+except (ImportError, SystemError):
+  import entity
 
 
 # Logging config

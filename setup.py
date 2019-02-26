@@ -9,7 +9,7 @@ with open("requirements.txt") as rf:
 
 setuptools.setup(
     name="binonymizer",
-    version="0.1",
+    version="0.1.1",
     install_requires=requirements,
     license="GNU General Public License v3.0",
     author="Prompsit Language Engineering",
@@ -18,9 +18,9 @@ setuptools.setup(
     maintainer_email="mbanon@prompsit.com",
     description="Binonymizer is a tool in Python that aims at tagging personal data in a parallel corpus.",
     long_description=long_description,
-    long_description_content_type="text/markdown",
+    long_description_content_type="text/markdown",    
     url="https://github.com/bitextor/binonymizer",
-    packages=setuptools.find_packages(),
+    packages=setuptools.find_packages(),    
     classifiers=[
         "Environment :: Console",
         "Intended Audience :: Science/Research",

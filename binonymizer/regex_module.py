@@ -4,9 +4,18 @@
 
 
 import re
-import entity
 import logging
+
+
+try:
+  from . import entity
+except (ImportError, SystemError):
+  import entity
+
+
 from itertools import chain
+
+
 __author__ = "Marta Bañón"
 __version__ = "Version 0.1 # 05/10/2018 # Initial release # Marta Bañón"
 

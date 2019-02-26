@@ -11,9 +11,13 @@ import logging
 import sys
 import os
 
-import merger_module
-import entity
 
+try:
+  from . import merger_module
+  from . import entity
+except (ImportError, SystemError):
+  import merger_module
+  import entity
 
 __author__ = "Marta Bañón"
 __version__ = "Version 0.1 # 05/10/2018 # Initial release # Marta Bañón"
@@ -32,16 +36,15 @@ Retrieves a names module  (NER tagger) object, configured and ready to use with 
 def selectNamesModule(lang):
 
   if lang in ixa_langs:
-    #TO DO
-    #sys.path.append(os.getcwd() + "/prompsit-python-bindings/")
+
     sys.path.append(os.path.dirname(sys.argv[0])+"/prompsit-python-bindings/")
     print(os.path.dirname(sys.argv[0])+"/prompsit-python-bindings/")
     
-#    import jpype
-#    import prompsit_python_bindings.ixa
-    import ixa_module
+    try:
+      from . import ixa_module
+    except (ImportError, SystemError):
+      import ixa_module
     ixa_object = ixa_module.IxaObject(lang)
-    #ixa_object.attachThreadToJVM()
     return ixa_object
 
   if lang in bilst_langs:
@@ -49,11 +52,18 @@ def selectNamesModule(lang):
     return sys.modules["bilst_module"]
 
   if lang in spacy_langs:
-    import spacy_module
+    try:
+      from . import spacy_module
+    except (ImportError, SystemError):   
+      import spacy_module
+      
     return spacy_module.SpacyObject(lang)
   #default
   else:  
-    import spacy_module
+    try:
+      from . import spacy_module
+    except (ImportError, SystemError):  
+      import spacy_module
     return spacy_module.SpacyObject(lang)
 
 

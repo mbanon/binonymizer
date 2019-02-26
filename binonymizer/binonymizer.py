@@ -15,7 +15,7 @@
 #or at document scope (in case of a lot of files with few lines) 
 
 
-import binonymizer_core
+
 import argparse
 import logging
 import os
@@ -27,18 +27,23 @@ from timeit import default_timer
 from multiprocessing import Queue, Process,  cpu_count
 from heapq import heappush, heappop
 
-import util
-import merger_module
-import address_module
-import regex_module
-import entity
-
-
 
 try:
   from .tmx_utils import tmx2text
+  from . import binonymizer_core
+  from . import util
+  from . import merger_module
+  from . import address_module
+  from . import regex_module
+  from . import entity
 except (ImportError, SystemError):
   from tmx_utils import tmx2text
+  import binonymizer_core
+  import util
+  import merger_module
+  import address_module
+  import regex_module
+  import entity
   
   
 __author__ = "Marta Bañón"
@@ -270,8 +275,7 @@ def main(args):
     sentences = args.input
       
  
-
-
+      
   perform_binonymization(args, sentences, regex_module,  address_module)
 
   #To do: rebuild tmx files with anotations from binonymizer

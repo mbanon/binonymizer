@@ -2,7 +2,12 @@
 
 #Extracts addresses
 import logging
-import entity
+
+try:
+  from . import entity
+except (ImportError, SystemError):
+  import entity
+
 
 """
 Extracts the address entities from a sentence

@@ -1,3 +1,6 @@
+#!/usr/bin/env python
+
+
 import json
 import logging
 from enum import Enum, auto

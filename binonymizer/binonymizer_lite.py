@@ -10,7 +10,6 @@
 #when the binonymizer-core.py finishes, builds the annotated TMXs (if the entry was a TMX file)
 
 
-import binonymizer_core
 import argparse
 import logging
 import os
@@ -20,18 +19,23 @@ import traceback
 from tempfile import NamedTemporaryFile, gettempdir
 from timeit import default_timer
 
-import util
-import merger_module
-import address_module
-import regex_module
-import entity
-
 
 try:
   from .tmx_utils import tmx2text
+  from . import binonymizer_core
+  from . import util
+  from . import merger_module
+  from . import address_module
+  from . import regex_module
+  from . import entity
 except (ImportError, SystemError):
   from tmx_utils import tmx2text
-  
+  import binonymizer_core
+  import util
+  import merger_module
+  import address_module
+  import regex_module
+  import entity
   
 __author__ = "Marta Bañón"
 __version__ = "Version 0.1 # 20181005 # Initial release # Marta Bañón"

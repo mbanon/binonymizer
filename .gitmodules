@@ -1,3 +1,4 @@
 [submodule "prompsit-python-bindings"]
 	path = prompsit-python-bindings
 	url = http://gitlab.prompsit.com/vmsanchez/prompsit-python-bindings.git
+	branch = master

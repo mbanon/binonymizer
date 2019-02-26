@@ -3,9 +3,15 @@
 #spacy-module:  extracts name entities 
 import spacy
 import logging
-import entity
 import sys
-import util
+
+
+try:
+  from . import util
+  from . import entity
+except (ImportError, SystemError):
+  import util
+  import entity
 
 
 class SpacyObject:
