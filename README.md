@@ -28,21 +28,35 @@ Currently, the Binonymizer is able to detect and tag the following types of enti
 
 ## Installation & Requirements
 
-Binonymizer works with Python 3.6.
-
-Requirements can be installed by using `pip`:
+Binonymizer works with Python 3.6, and can be installed with `pip`:
 
 ```
-python3.6 -m pip install -r requirements.txt
- ```
+python3.6 -m pip install binonymizer
+```
+
+After installation, two  binary files (`binonymizer` and `binonymizer-lite`) will be located in your `python/installation/prefix`/bin directory.
+
 Language-dependant packages and models are automatically downloaded and installed on runtime, if needed.
+
+### Extra instructions for basque
+
+In case you plan to binonymize basque data, you need to download `binonymizer` from [github](http://github.com/bitextor/binonymizer), and run the following steps:
+
+```bash
+cd binonymizer
+git submodule sync
+git submodule update --init --recursive --remote
+cd prompsit_python_bindings
+python3.6 setup.py install
+```
+Please note that you need to have access to Prompsit's private repository. [Contact us](mailto:help@prompsit.com) if you need further details.
 
 ## Usage
 
 Binonymizer can be run with:
 
 ```bash
-binonymizer.py [-h] --format {tmx,cols} [--tmp_dir TMP_DIR]
+binonymizer [-h] --format {tmx,cols} [--tmp_dir TMP_DIR]
                      [-b BLOCK_SIZE] [-p PROCESSES] [-q] [--debug]
                      [--logfile LOGFILE] [-v]
                      input [output] srclang trglang
@@ -71,18 +85,17 @@ binonymizer.py [-h] --format {tmx,cols} [--tmp_dir TMP_DIR]
 
 ### Example
 ```bash
-python3.6 binonymizer.py corpus.en-es.raw corpus.en-es.anon en es --format cols  --tmp_dir /tmpdir -b50000 -p31 
+binonymizer corpus.en-es.raw corpus.en-es.anon en es --format cols  --tmp_dir /tmpdir -b50000 -p31 
 ```
 This will read the corpus "corpus.en-es.raw", which is in a column-based format, extracting personal data and writing the tagged output in "corpus.en-es.anon". Binonymizer will run in blocks of 50000 sentences, using 31 cores, and writing temporary files in /tmpdir
 
 
 ## Lite version
 
-Although `binonymizer` makes use of parallelization  by distributing workload to the available cores, some users might prefer to implement their own parallelization strategies. For that reason, a single-thread version of the scripts is provided: `binonymizer_lite.py`. The usage is exactly the same as for the full version, but omitting the blocksize (-b) and processes (-p) parameter.
+Although `binonymizer` makes use of parallelization by distributing workload to the available cores, some users might prefer to implement their own parallelization strategies. For that reason, a single-thread version of the script is provided: `binonymizer_lite`. The usage is exactly the same as for the full version, but omitting the blocksize (-b) and processes (-p) parameter.
 
 
 ## TO DO
-* Pip installable
 * Fully support TMX input/output
 * Address recognition
 * GPU support
