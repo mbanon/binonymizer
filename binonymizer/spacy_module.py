@@ -48,8 +48,8 @@ class SpacyObject:
       spacy.cli.download("en_core_web_md")    
       return spacy.load("en_core_web_md")
     elif lang in ["de"]:
-      spacy.cli.download("de_core_news_sm")
-      return spacy.load("de_core_news_sm")
+      spacy.cli.download("de_core_news_md")
+      return spacy.load("de_core_news_md")
     elif lang in ["fr"]:
       spacy.cli.download("fr_core_news_md")
       return spacy.load("fr_core_news_md")
@@ -68,7 +68,7 @@ class SpacyObject:
     elif lang in ["el"]:
       spacy.cli.download("el_core_news_md")
       return spacy.load("el_core_news_md")
-    elif lang in ["bg", "da", "el", "sk", "sl", "sv", "ga", "hr", "mt", "lt", "hu", "et", "pl", "cs", "ro", "fi", "lv"]:
+    elif lang in ["bg", "da", "sk", "sl", "sv", "ga", "hr", "mt", "lt", "hu", "et", "pl", "cs", "ro", "fi", "lv"]:
       spacy.cli.download("xx_ent_wiki_sm")
       return spacy.load("xx_ent_wiki_sm") 
     else:  #default
