@@ -1,5 +1,8 @@
 # binonymizer
 
+![License](https://img.shields.io/badge/License-GPLv3-blue.svg)
+
+
 Binonymizer is a tool in Python that aims at tagging personal data<sup>1</sup> in a parallel corpus.
 
 For example, for a input like:
@@ -104,3 +107,10 @@ Although `binonymizer` makes use of parallelization by distributing workload to 
 
 
 <sup>1</sup>: See EC definition of "personal information": https://ec.europa.eu/info/law/law-topic/data-protection/reform/what-personal-data_en
+
+
+___
+
+![Connecting Europe Facility](https://www.paracrawl.eu/images/logo_en_cef273x39.png)
+
+All documents and software contained in this repository reflect only the authors' view. The Innovation and Networks Executive Agency of the European Union is not responsible for any use that may be made of the information it contains.
