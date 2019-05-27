@@ -14,6 +14,10 @@ except (ImportError, SystemError):
   import entity
 
 
+
+#spacy.require_gpu()
+
+  
 class SpacyObject:
   """
   SpacyObject constructor
@@ -61,6 +65,9 @@ class SpacyObject:
     elif lang in ["nl"]:
       spacy.cli.download("nl_core_news_sm")
       return spacy.load("nl_core_news_sm")
+    elif lang in ["el"]:
+      spacy.cli.download("el_core_news_md")
+      return spacy.load("el_core_news_md")
     elif lang in ["bg", "da", "el", "sk", "sl", "sv", "ga", "hr", "mt", "lt", "hu", "et", "pl", "cs", "ro", "fi", "lv"]:
       spacy.cli.download("xx_ent_wiki_sm")
       return spacy.load("xx_ent_wiki_sm") 

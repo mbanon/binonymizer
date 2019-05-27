@@ -33,7 +33,7 @@ spacy_langs=["bg", "da", "el", "sk", "sl", "sv", "ga", "hr", "mt", "lt", "hu", "
 """
 Retrieves a names module  (NER tagger) object, configured and ready to use with the given language
 """
-def selectNamesModule(lang):
+def selectNamesModule(lang, core=0):
 
   if lang in ixa_langs:
 

@@ -57,10 +57,10 @@ def extract(sentence):
 
   entities = []
   entities.extend(extract_emails(sentence))
-  entities.extend(extract_phones(sentence))
+  #entities.extend(extract_phones(sentence))
   entities.extend(extract_IDs(sentence))
-  entities.extend(extract_IPs(sentence))
-  entities.extend(extract_GPSs(sentence))
+  #entities.extend(extract_IPs(sentence))
+  #entities.extend(extract_GPSs(sentence))
 
   return entities
 
